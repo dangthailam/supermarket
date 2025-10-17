@@ -1,0 +1,37 @@
+<div class="layout">
+  <!-- Header -->
+  <header class="header">
+    <p-button
+      icon="pi pi-bars"
+      (onClick)="toggleSidebar()"
+      [text]="true"
+      severity="secondary"
+      class="menu-button">
+    </p-button>
+    <h1 class="app-title">SuperMarket POS</h1>
+    <div class="header-right">
+      <p-button
+        icon="pi pi-user"
+        label="Admin"
+        [text]="true"
+        severity="secondary">
+      </p-button>
+    </div>
+  </header>
+
+  <!-- Sidebar -->
+  <p-sidebar [(visible)]="sidebarVisible" [modal]="true" [dismissible]="true">
+    <ng-template pTemplate="header">
+      <div class="sidebar-header">
+        <i class="pi pi-shopping-bag" style="font-size: 1.5rem; margin-right: 0.5rem;"></i>
+        <span class="sidebar-title">Menu</span>
+      </div>
+    </ng-template>
+    <p-menu [model]="menuItems" [style]="{'width':'100%', 'border':'none'}"></p-menu>
+  </p-sidebar>
+
+  <!-- Main Content -->
+  <main class="main-content">
+    <router-outlet></router-outlet>
+  </main>
+</div>

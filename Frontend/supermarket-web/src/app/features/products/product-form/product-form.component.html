@@ -1,0 +1,212 @@
+<p-card>
+  <ng-template pTemplate="header">
+    <div class="form-header">
+      <h2>{{ isEditMode ? 'Edit Product' : 'Create New Product' }}</h2>
+    </div>
+  </ng-template>
+
+  @if (error) {
+    <p-message severity="error" [text]="error" styleClass="mb-3"></p-message>
+  }
+
+  @if (loading) {
+    <div class="loading-container">
+      <p-progressSpinner></p-progressSpinner>
+      <p>Loading...</p>
+    </div>
+  }
+
+  <form [formGroup]="productForm" (ngSubmit)="onSubmit()" class="product-form" *ngIf="!loading">
+    <div class="form-grid">
+      <!-- SKU -->
+      <div class="field">
+        <label for="sku">SKU <span class="required">*</span></label>
+        <input
+          id="sku"
+          type="text"
+          pInputText
+          formControlName="sku"
+          [class.ng-invalid]="isFieldInvalid('sku')"
+          [class.ng-dirty]="isFieldInvalid('sku')"
+          class="w-full"
+        />
+        @if (isFieldInvalid('sku')) {
+          <small class="p-error">{{ getErrorMessage('sku') }}</small>
+        }
+      </div>
+
+      <!-- Name -->
+      <div class="field">
+        <label for="name">Product Name <span class="required">*</span></label>
+        <input
+          id="name"
+          type="text"
+          pInputText
+          formControlName="name"
+          [class.ng-invalid]="isFieldInvalid('name')"
+          [class.ng-dirty]="isFieldInvalid('name')"
+          class="w-full"
+        />
+        @if (isFieldInvalid('name')) {
+          <small class="p-error">{{ getErrorMessage('name') }}</small>
+        }
+      </div>
+
+      <!-- Barcode -->
+      <div class="field">
+        <label for="barcode">Barcode</label>
+        <input
+          id="barcode"
+          type="text"
+          pInputText
+          formControlName="barcode"
+          class="w-full"
+        />
+      </div>
+
+      <!-- Category -->
+      <div class="field">
+        <label for="categoryId">Category <span class="required">*</span></label>
+        <p-dropdown
+          inputId="categoryId"
+          [options]="categories"
+          formControlName="categoryId"
+          optionLabel="name"
+          optionValue="id"
+          placeholder="Select Category"
+          [class.ng-invalid]="isFieldInvalid('categoryId')"
+          [class.ng-dirty]="isFieldInvalid('categoryId')"
+          styleClass="w-full">
+        </p-dropdown>
+        @if (isFieldInvalid('categoryId')) {
+          <small class="p-error">{{ getErrorMessage('categoryId') }}</small>
+        }
+      </div>
+
+      <!-- Price -->
+      <div class="field">
+        <label for="price">Price <span class="required">*</span></label>
+        <p-inputNumber
+          inputId="price"
+          formControlName="price"
+          mode="currency"
+          currency="USD"
+          locale="en-US"
+          [minFractionDigits]="2"
+          [class.ng-invalid]="isFieldInvalid('price')"
+          [class.ng-dirty]="isFieldInvalid('price')"
+          styleClass="w-full">
+        </p-inputNumber>
+        @if (isFieldInvalid('price')) {
+          <small class="p-error">{{ getErrorMessage('price') }}</small>
+        }
+      </div>
+
+      <!-- Cost Price -->
+      <div class="field">
+        <label for="costPrice">Cost Price <span class="required">*</span></label>
+        <p-inputNumber
+          inputId="costPrice"
+          formControlName="costPrice"
+          mode="currency"
+          currency="USD"
+          locale="en-US"
+          [minFractionDigits]="2"
+          [class.ng-invalid]="isFieldInvalid('costPrice')"
+          [class.ng-dirty]="isFieldInvalid('costPrice')"
+          styleClass="w-full">
+        </p-inputNumber>
+        @if (isFieldInvalid('costPrice')) {
+          <small class="p-error">{{ getErrorMessage('costPrice') }}</small>
+        }
+      </div>
+
+      <!-- Stock Quantity -->
+      <div class="field">
+        <label for="stockQuantity">Stock Quantity <span class="required">*</span></label>
+        <p-inputNumber
+          inputId="stockQuantity"
+          formControlName="stockQuantity"
+          [disabled]="isEditMode"
+          [class.ng-invalid]="isFieldInvalid('stockQuantity')"
+          [class.ng-dirty]="isFieldInvalid('stockQuantity')"
+          styleClass="w-full">
+        </p-inputNumber>
+        @if (isEditMode) {
+          <small class="form-hint">Stock is managed via inventory movements</small>
+        }
+        @if (isFieldInvalid('stockQuantity')) {
+          <small class="p-error">{{ getErrorMessage('stockQuantity') }}</small>
+        }
+      </div>
+
+      <!-- Min Stock Level -->
+      <div class="field">
+        <label for="minStockLevel">Min Stock Level <span class="required">*</span></label>
+        <p-inputNumber
+          inputId="minStockLevel"
+          formControlName="minStockLevel"
+          [class.ng-invalid]="isFieldInvalid('minStockLevel')"
+          [class.ng-dirty]="isFieldInvalid('minStockLevel')"
+          styleClass="w-full">
+        </p-inputNumber>
+        @if (isFieldInvalid('minStockLevel')) {
+          <small class="p-error">{{ getErrorMessage('minStockLevel') }}</small>
+        }
+      </div>
+
+      <!-- Description (full width) -->
+      <div class="field full-width">
+        <label for="description">Description</label>
+        <textarea
+          id="description"
+          pInputTextarea
+          formControlName="description"
+          rows="3"
+          class="w-full"
+        ></textarea>
+      </div>
+
+      <!-- Image URL (full width) -->
+      <div class="field full-width">
+        <label for="imageUrl">Image URL</label>
+        <input
+          id="imageUrl"
+          type="text"
+          pInputText
+          formControlName="imageUrl"
+          class="w-full"
+        />
+      </div>
+
+      <!-- Is Active -->
+      @if (isEditMode) {
+        <div class="field field-checkbox">
+          <p-checkbox
+            inputId="isActive"
+            formControlName="isActive"
+            [binary]="true">
+          </p-checkbox>
+          <label for="isActive">Active</label>
+        </div>
+      }
+    </div>
+
+    <div class="form-actions">
+      <p-button
+        label="Cancel"
+        icon="pi pi-times"
+        severity="secondary"
+        (onClick)="onCancel()"
+        [disabled]="loading">
+      </p-button>
+      <p-button
+        [label]="loading ? 'Saving...' : (isEditMode ? 'Update Product' : 'Create Product')"
+        icon="pi pi-check"
+        type="submit"
+        [disabled]="loading"
+        [loading]="loading">
+      </p-button>
+    </div>
+  </form>
+</p-card>

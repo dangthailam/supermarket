@@ -1,0 +1,111 @@
+<div class="pos-container">
+  <div class="pos-left">
+    <div class="barcode-section">
+      <h3>Scan Product</h3>
+      <input
+        type="text"
+        [(ngModel)]="barcode"
+        (keyup.enter)="addProductByBarcode()"
+        placeholder="Scan or enter barcode..."
+        class="barcode-input"
+        autofocus
+      />
+    </div>
+
+    <div class="cart-section">
+      <h3>Cart Items</h3>
+      <div *ngIf="cart.length === 0" class="empty-cart">
+        Cart is empty. Scan products to add.
+      </div>
+
+      <table *ngIf="cart.length > 0" class="cart-table">
+        <thead>
+          <tr>
+            <th>Product</th>
+            <th>Price</th>
+            <th>Qty</th>
+            <th>Total</th>
+            <th></th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let item of cart; let i = index">
+            <td>{{ item.product.name }}</td>
+            <td>{{ item.product.price | currency }}</td>
+            <td>
+              <input
+                type="number"
+                [(ngModel)]="item.quantity"
+                (change)="updateQuantity(item, item.quantity)"
+                min="1"
+                class="qty-input"
+              />
+            </td>
+            <td>{{ item.total | currency }}</td>
+            <td>
+              <button class="btn-remove" (click)="removeFromCart(i)">×</button>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <div class="pos-right">
+    <div class="customer-section">
+      <h3>Customer Info (Optional)</h3>
+      <input
+        type="text"
+        [(ngModel)]="customerName"
+        placeholder="Customer Name"
+        class="form-input"
+      />
+      <input
+        type="text"
+        [(ngModel)]="customerPhone"
+        placeholder="Phone Number"
+        class="form-input"
+      />
+    </div>
+
+    <div class="payment-section">
+      <h3>Payment</h3>
+      <select [(ngModel)]="paymentMethod" class="form-select">
+        <option value="Cash">Cash</option>
+        <option value="Card">Card</option>
+        <option value="Mobile">Mobile Payment</option>
+      </select>
+    </div>
+
+    <div class="totals-section">
+      <div class="total-row">
+        <span>Subtotal:</span>
+        <span>{{ getSubTotal() | currency }}</span>
+      </div>
+      <div class="total-row">
+        <span>Tax (10%):</span>
+        <span>{{ getTax() | currency }}</span>
+      </div>
+      <div class="total-row">
+        <span>Discount:</span>
+        <input
+          type="number"
+          [(ngModel)]="discountAmount"
+          min="0"
+          class="discount-input"
+        />
+      </div>
+      <div class="total-row grand-total">
+        <span>Grand Total:</span>
+        <span>{{ getGrandTotal() | currency }}</span>
+      </div>
+    </div>
+
+    <div class="actions">
+      <button class="btn btn-clear" (click)="clearCart()">Clear</button>
+      <button class="btn btn-checkout" (click)="checkout()" [disabled]="cart.length === 0">
+        Checkout
+      </button>
+    </div>
+  </div>
+</div>

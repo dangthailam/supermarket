@@ -1,0 +1,30 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(dir)",
+      "Bash(dotnet new:*)",
+      "Bash(dotnet restore:*)",
+      "Bash(ng new:*)",
+      "Bash(npm install)",
+      "Bash(dotnet sln add:*)",
+      "Bash(dotnet add package:*)",
+      "Bash(ng generate module:*)",
+      "Bash(ng generate:*)",
+      "Bash(dir:*)",
+      "Bash(npm start)",
+      "Bash(ng serve:*)",
+      "WebSearch",
+      "Bash(npm install:*)",
+      "Bash(python:*)",
+      "Bash(pip install:*)",
+      "Bash(dotnet ef migrations add:*)",
+      "Bash(dotnet ef database:*)",
+      "Bash(dotnet ef migrations:*)",
+      "Bash(git init:*)",
+      "Bash(git config:*)",
+      "Bash(git add:*)"
+    ],
+    "deny": [],
+    "ask": []
+  }
+}

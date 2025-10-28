@@ -2,6 +2,7 @@ using Microsoft.AspNetCore.Mvc;
 using SuperMarket.API.DTOs;
 using SuperMarket.API.Interfaces;
 using SuperMarket.API.Services;
+using SuperMarket.API.Models;
 
 namespace SuperMarket.API.Controllers;
 
@@ -25,7 +26,28 @@ public class ProductsController : ControllerBase
         return Ok(products);
     }
 
-    [HttpGet("{id}")]
+    [HttpGet("paged")]
+    public async Task<ActionResult<PaginatedResult<ProductDto>>> GetProductsPaged(
+        [FromQuery] int pageNumber = 1,
+        [FromQuery] int pageSize = 10,
+        [FromQuery] string? searchTerm = null,
+        [FromQuery] string? sortBy = null,
+        [FromQuery] bool sortDescending = false)
+    {
+        var paginationParams = new PaginationParams
+        {
+            PageNumber = pageNumber,
+            PageSize = pageSize,
+            SearchTerm = searchTerm,
+            SortBy = sortBy,
+            SortDescending = sortDescending
+        };
+
+        var result = await _productService.GetProductsPagedAsync(paginationParams);
+        return Ok(result);
+    }
+
+    [HttpGet("{id:int}")]
     public async Task<ActionResult<ProductDto>> GetProductById(int id)
     {
         var product = await _productService.GetProductByIdAsync(id);
@@ -108,7 +130,7 @@ public class ProductsController : ControllerBase
     }
 
     [HttpPost("import-excel")]
-    public async Task<ActionResult> ImportFromExcel([FromForm] IFormFile file)
+    public async Task<ActionResult> ImportFromExcel(IFormFile file)
     {
         if (file == null || file.Length == 0)
             return BadRequest(new { message = "No file uploaded" });

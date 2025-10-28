@@ -1,13 +1,10 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { ProductService } from '../../../core/services/product.service';
-import { TransactionService } from '../../../core/services/transaction.service';
-import { Product } from '../../../core/models/product.model';
-import { CreateTransaction, CreateTransactionItem } from '../../../core/models/transaction.model';
+import { SuperMarketApiClient, ProductDto, CreateTransactionDto, CreateTransactionItemDto } from '../../../core/api/api-client';
 
 interface CartItem {
-  product: Product;
+  product: ProductDto;
   quantity: number;
   discount: number;
   total: number;
@@ -29,8 +26,7 @@ export class PosMainComponent implements OnInit {
   discountAmount = 0;
 
   constructor(
-    private productService: ProductService,
-    private transactionService: TransactionService
+    private apiClient: SuperMarketApiClient
   ) {}
 
   ngOnInit(): void {}
@@ -38,8 +34,8 @@ export class PosMainComponent implements OnInit {
   addProductByBarcode(): void {
     if (!this.barcode.trim()) return;
 
-    this.productService.getProductByBarcode(this.barcode).subscribe({
-      next: (product) => {
+    this.apiClient.barcode(this.barcode).subscribe({
+      next: (product: ProductDto) => {
         this.addToCart(product);
         this.barcode = '';
       },
@@ -50,18 +46,18 @@ export class PosMainComponent implements OnInit {
     });
   }
 
-  addToCart(product: Product): void {
+  addToCart(product: ProductDto): void {
     const existingItem = this.cart.find(item => item.product.id === product.id);
 
     if (existingItem) {
       existingItem.quantity++;
-      existingItem.total = existingItem.quantity * existingItem.product.price - existingItem.discount;
+      existingItem.total = existingItem.quantity * existingItem.product.price! - existingItem.discount;
     } else {
       this.cart.push({
         product,
         quantity: 1,
         discount: 0,
-        total: product.price
+        total: product.price!
       });
     }
   }
@@ -76,7 +72,7 @@ export class PosMainComponent implements OnInit {
       this.removeFromCart(index);
     } else {
       item.quantity = quantity;
-      item.total = item.quantity * item.product.price - item.discount;
+      item.total = item.quantity * item.product.price! - item.discount;
     }
   }
 
@@ -98,21 +94,21 @@ export class PosMainComponent implements OnInit {
       return;
     }
 
-    const items: CreateTransactionItem[] = this.cart.map(item => ({
-      productId: item.product.id,
+    const items: CreateTransactionItemDto[] = this.cart.map(item => ({
+      productId: item.product.id!,
       quantity: item.quantity,
       discount: item.discount
     }));
 
-    const transaction: CreateTransaction = {
+    const transaction: CreateTransactionDto = {
       paymentMethod: this.paymentMethod,
       customerName: this.customerName || undefined,
       customerPhone: this.customerPhone || undefined,
       discountAmount: this.discountAmount,
-      items
+      items: items
     };
 
-    this.transactionService.createTransaction(transaction).subscribe({
+    this.apiClient.transactionsPOST(transaction).subscribe({
       next: (result) => {
         alert(`Transaction completed! Transaction #: ${result.transactionNumber}`);
         this.clearCart();

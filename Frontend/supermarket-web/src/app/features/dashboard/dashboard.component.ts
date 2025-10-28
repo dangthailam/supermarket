@@ -1,8 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterLink } from '@angular/router';
-import { ProductService } from '../../core/services/product.service';
-import { TransactionService } from '../../core/services/transaction.service';
+import { SuperMarketApiClient, ProductDto } from '../../core/api/api-client';
 import { CardModule } from 'primeng/card';
 import { ButtonModule } from 'primeng/button';
 import { ProgressSpinnerModule } from 'primeng/progressspinner';
@@ -20,8 +19,7 @@ export class DashboardComponent implements OnInit {
   loading = true;
 
   constructor(
-    private productService: ProductService,
-    private transactionService: TransactionService
+    private apiClient: SuperMarketApiClient
   ) {}
 
   ngOnInit(): void {
@@ -30,16 +28,16 @@ export class DashboardComponent implements OnInit {
 
   loadDashboardData(): void {
     // Load today's sales
-    this.transactionService.getTodaysSales().subscribe({
-      next: (sales: { totalSales: number }) => {
-        this.todaySales = sales.totalSales;
+    this.apiClient.sales().subscribe({
+      next: (totalSales: number) => {
+        this.todaySales = totalSales;
       },
       error: (err: any) => console.error('Error loading sales:', err)
     });
 
     // Load low stock count
-    this.productService.getLowStockProducts().subscribe({
-      next: (products: any[]) => {
+    this.apiClient.lowStock().subscribe({
+      next: (products: ProductDto[]) => {
         this.lowStockCount = products.length;
         this.loading = false;
       },

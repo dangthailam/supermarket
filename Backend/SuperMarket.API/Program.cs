@@ -3,6 +3,10 @@ using SuperMarket.API.Data;
 using SuperMarket.API.Interfaces;
 using SuperMarket.API.Repositories;
 using SuperMarket.API.Services;
+using OfficeOpenXml;
+
+// Set EPPlus license for version 8+
+ExcelPackage.License.SetNonCommercialPersonal("SuperMarket App");
 
 var builder = WebApplication.CreateBuilder(args);
 

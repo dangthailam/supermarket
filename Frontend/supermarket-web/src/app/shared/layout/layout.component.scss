@@ -1,73 +1,181 @@
-.layout {
+.kiotviet-layout {
   display: flex;
   flex-direction: column;
   height: 100vh;
   overflow: hidden;
+  background: #f5f5f5;
 }
 
-.header {
+// Top Header
+.top-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 0 1rem;
-  height: 60px;
-  background: var(--primary-color, #3b82f6);
-  color: white;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  padding: 0 20px;
+  height: 50px;
+  background: white;
+  border-bottom: 1px solid #e0e0e0;
   z-index: 1000;
 }
 
-.app-title {
-  flex: 1;
-  margin: 0 1rem;
-  font-size: 1.3rem;
+.header-left {
+  display: flex;
+  align-items: center;
+}
+
+.logo {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 20px;
   font-weight: 600;
-  color: white;
+  color: #4b7cf3;
+
+  i {
+    font-size: 24px;
+  }
 }
 
 .header-right {
   display: flex;
   align-items: center;
+  gap: 5px;
 }
 
-.sidebar-header {
+.header-btn {
   display: flex;
   align-items: center;
-  font-size: 1.2rem;
-  font-weight: 600;
+  gap: 5px;
+  padding: 6px 12px;
+  background: transparent;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 13px;
+  color: #666;
+  transition: background 0.2s;
+
+  &:hover {
+    background: #f5f5f5;
+  }
+
+  i {
+    font-size: 16px;
+  }
 }
 
-.sidebar-title {
-  font-weight: 600;
+.flag-icon {
+  width: 20px;
+  height: 14px;
 }
 
+.notification-btn,
+.settings-btn,
+.user-btn {
+  padding: 8px;
+
+  i {
+    font-size: 18px;
+  }
+}
+
+// Navigation Menu
+.main-nav {
+  display: flex;
+  align-items: center;
+  padding: 0 20px;
+  height: 48px;
+  background: #4b7cf3;
+  gap: 5px;
+  position: relative;
+}
+
+.nav-item {
+  display: flex;
+  align-items: center;
+  padding: 12px 16px;
+  color: white;
+  text-decoration: none;
+  font-size: 14px;
+  font-weight: 500;
+  border-radius: 4px 4px 0 0;
+  transition: background 0.2s;
+  white-space: nowrap;
+  position: relative;
+
+  &:hover {
+    background: rgba(255, 255, 255, 0.1);
+  }
+
+  &.active {
+    background: white;
+    color: #333;
+  }
+}
+
+.new-badge {
+  margin-left: 6px;
+  padding: 2px 6px;
+  background: #ff4444;
+  color: white;
+  font-size: 10px;
+  font-weight: 600;
+  border-radius: 3px;
+}
+
+.nav-right {
+  margin-left: auto;
+}
+
+.btn-sell {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 16px;
+  background: white;
+  color: #4b7cf3;
+  border: none;
+  border-radius: 4px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+
+  &:hover {
+    background: #f0f0f0;
+    transform: translateY(-1px);
+  }
+
+  i {
+    font-size: 16px;
+  }
+}
+
+// Main Content
 .main-content {
   flex: 1;
-  padding: 1.5rem;
-  background: #f8f9fa;
+  background: #f5f5f5;
   overflow-y: auto;
 }
 
-@media (max-width: 768px) {
-  .app-title {
-    font-size: 1.1rem;
+@media (max-width: 1200px) {
+  .header-btn span {
+    display: none;
   }
 
-  .main-content {
-    padding: 1rem;
+  .nav-item {
+    padding: 12px;
+    font-size: 13px;
   }
 }
 
-@media (max-width: 576px) {
-  .header {
-    padding: 0 0.5rem;
+@media (max-width: 768px) {
+  .top-header {
+    padding: 0 10px;
   }
 
-  .app-title {
-    font-size: 1rem;
-  }
-
-  ::ng-deep .p-sidebar {
-    width: 80vw !important;
+  .main-nav {
+    overflow-x: auto;
+    padding: 0 10px;
   }
 }

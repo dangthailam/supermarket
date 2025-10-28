@@ -1,34 +1,82 @@
-<div class="layout">
-  <!-- Header -->
-  <header class="header">
-    <p-button
-      icon="pi pi-bars"
-      (onClick)="toggleSidebar()"
-      [text]="true"
-      severity="secondary"
-      class="menu-button">
-    </p-button>
-    <h1 class="app-title">SuperMarket POS</h1>
+<div class="kiotviet-layout">
+  <!-- Top Header -->
+  <header class="top-header">
+    <div class="header-left">
+      <div class="logo">
+        <i class="pi pi-shopping-cart"></i>
+        <span>KiotViet</span>
+      </div>
+    </div>
     <div class="header-right">
-      <p-button
-        icon="pi pi-user"
-        label="Admin"
-        [text]="true"
-        severity="secondary">
-      </p-button>
+      <button class="header-btn">
+        <i class="pi pi-question-circle"></i>
+        <span>Giao hàng</span>
+      </button>
+      <button class="header-btn">
+        <i class="pi pi-book"></i>
+        <span>Chủ đề</span>
+      </button>
+      <button class="header-btn">
+        <i class="pi pi-question-circle"></i>
+        <span>Hỗ trợ</span>
+      </button>
+      <button class="header-btn">
+        <i class="pi pi-comments"></i>
+        <span>Góp ý</span>
+      </button>
+      <button class="header-btn lang-btn">
+        <img src="assets/vietnam-flag.png" alt="VN" class="flag-icon" />
+        <span>Tiếng Việt</span>
+      </button>
+      <button class="header-btn notification-btn">
+        <i class="pi pi-bell"></i>
+      </button>
+      <button class="header-btn settings-btn">
+        <i class="pi pi-cog"></i>
+      </button>
+      <button class="header-btn user-btn">
+        <i class="pi pi-user"></i>
+      </button>
     </div>
   </header>
 
-  <!-- Sidebar -->
-  <p-sidebar [(visible)]="sidebarVisible" [modal]="true" [dismissible]="true">
-    <ng-template pTemplate="header">
-      <div class="sidebar-header">
-        <i class="pi pi-shopping-bag" style="font-size: 1.5rem; margin-right: 0.5rem;"></i>
-        <span class="sidebar-title">Menu</span>
-      </div>
-    </ng-template>
-    <p-menu [model]="menuItems" [style]="{'width':'100%', 'border':'none'}"></p-menu>
-  </p-sidebar>
+  <!-- Navigation Menu -->
+  <nav class="main-nav">
+    <a routerLink="/dashboard" routerLinkActive="active" class="nav-item">
+      Tổng quan
+    </a>
+    <a routerLink="/products" routerLinkActive="active" class="nav-item">
+      Hàng hóa
+    </a>
+    <a routerLink="/orders" routerLinkActive="active" class="nav-item">
+      Đơn hàng
+    </a>
+    <a routerLink="/customers" routerLinkActive="active" class="nav-item">
+      Khách hàng
+    </a>
+    <a routerLink="/employees" routerLinkActive="active" class="nav-item">
+      Nhân viên
+    </a>
+    <a routerLink="/reports" routerLinkActive="active" class="nav-item">
+      Sổ quỹ
+    </a>
+    <a routerLink="/discounts" routerLinkActive="active" class="nav-item">
+      Phần tích
+    </a>
+    <a routerLink="/online" routerLinkActive="active" class="nav-item">
+      Bán online
+    </a>
+    <a routerLink="/accounting" routerLinkActive="active" class="nav-item">
+      Thuế & Kế toán
+      <span class="new-badge">MỚI</span>
+    </a>
+    <div class="nav-right">
+      <button class="btn-sell">
+        <i class="pi pi-shopping-bag"></i>
+        Bán hàng
+      </button>
+    </div>
+  </nav>
 
   <!-- Main Content -->
   <main class="main-content">

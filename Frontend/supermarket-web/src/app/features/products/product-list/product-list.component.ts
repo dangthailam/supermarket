@@ -1,34 +1,56 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
-import { ProductService } from '../../../core/services/product.service';
-import { Product } from '../../../core/models/product.model';
-import { TableModule } from 'primeng/table';
+import { FormsModule } from '@angular/forms';
+import { SuperMarketApiClient, ProductDto, ProductDtoPaginatedResult } from '../../../core/api/api-client';
+import { DropdownModule } from 'primeng/dropdown';
+import { RadioButtonModule } from 'primeng/radiobutton';
+import { CheckboxModule } from 'primeng/checkbox';
 import { ButtonModule } from 'primeng/button';
 import { InputTextModule } from 'primeng/inputtext';
-import { TagModule } from 'primeng/tag';
-import { CardModule } from 'primeng/card';
 import { ConfirmDialogModule } from 'primeng/confirmdialog';
 import { ToastModule } from 'primeng/toast';
+import { TableModule } from 'primeng/table';
 import { TooltipModule } from 'primeng/tooltip';
 import { ConfirmationService, MessageService } from 'primeng/api';
 
 @Component({
   selector: 'app-product-list',
   standalone: true,
-  imports: [CommonModule, TableModule, ButtonModule, InputTextModule, TagModule, CardModule, ConfirmDialogModule, ToastModule, TooltipModule],
+  imports: [
+    CommonModule,
+    FormsModule,
+    DropdownModule,
+    RadioButtonModule,
+    CheckboxModule,
+    ButtonModule,
+    InputTextModule,
+    ConfirmDialogModule,
+    ToastModule,
+    TableModule,
+    TooltipModule
+  ],
   providers: [ConfirmationService, MessageService],
   templateUrl: './product-list.component.html',
   styleUrl: './product-list.component.scss'
 })
 export class ProductListComponent implements OnInit {
-  products: Product[] = [];
-  filteredProducts: Product[] = [];
+  products: ProductDto[] = [];
   loading = false;
   searchTerm = '';
+  categories: any[] = [];
+  stockFilter: string = 'all';
+  timeFilter: string = 'all';
+
+  // Pagination properties
+  totalRecords = 0;
+  pageSize = 20;
+  currentPage = 1;
+  sortBy = '';
+  sortDescending = false;
 
   constructor(
-    private productService: ProductService,
+    private apiClient: SuperMarketApiClient,
     private router: Router,
     private confirmationService: ConfirmationService,
     private messageService: MessageService
@@ -40,10 +62,17 @@ export class ProductListComponent implements OnInit {
 
   loadProducts(): void {
     this.loading = true;
-    this.productService.getAllProducts().subscribe({
-      next: (products) => {
-        this.products = products;
-        this.filteredProducts = products;
+
+    this.apiClient.paged(
+      this.currentPage,
+      this.pageSize,
+      this.searchTerm || undefined,
+      this.sortBy || undefined,
+      this.sortDescending
+    ).subscribe({
+      next: (result: ProductDtoPaginatedResult) => {
+        this.products = result.items || [];
+        this.totalRecords = result.totalCount || 0;
         this.loading = false;
       },
       error: (error) => {
@@ -55,29 +84,47 @@ export class ProductListComponent implements OnInit {
 
   searchProducts(term: string): void {
     this.searchTerm = term;
-    if (!term.trim()) {
-      this.filteredProducts = this.products;
-      return;
-    }
-
-    this.productService.searchProducts(term).subscribe({
-      next: (products) => {
-        this.filteredProducts = products;
-      },
-      error: (error) => {
-        console.error('Error searching products:', error);
-      }
-    });
+    this.currentPage = 1; // Reset to first page on search
+    this.loadProducts();
   }
 
-  deleteProduct(product: Product): void {
+  onPageChange(event: any): void {
+    this.currentPage = event.page + 1; // PrimeNG uses 0-based index
+    this.pageSize = event.rows;
+    this.loadProducts();
+  }
+
+  onLazyLoad(event: any): void {
+    this.currentPage = (event.first / event.rows) + 1;
+    this.pageSize = event.rows;
+
+    // Handle sorting
+    if (event.sortField) {
+      this.sortBy = event.sortField;
+      this.sortDescending = event.sortOrder === -1;
+    }
+
+    this.loadProducts();
+  }
+
+  onSort(field: string): void {
+    if (this.sortBy === field) {
+      this.sortDescending = !this.sortDescending;
+    } else {
+      this.sortBy = field;
+      this.sortDescending = false;
+    }
+    this.loadProducts();
+  }
+
+  deleteProduct(product: ProductDto): void {
     this.confirmationService.confirm({
       message: `Are you sure you want to delete ${product.name}?`,
       header: 'Confirm Delete',
       icon: 'pi pi-exclamation-triangle',
       acceptButtonStyleClass: 'p-button-danger',
       accept: () => {
-        this.productService.deleteProduct(product.id).subscribe({
+        this.apiClient.productsDELETE(product.id!).subscribe({
           next: () => {
             this.messageService.add({
               severity: 'success',
@@ -105,5 +152,9 @@ export class ProductListComponent implements OnInit {
 
   editProduct(id: number): void {
     this.router.navigate(['/products/edit', id]);
+  }
+
+  getTotalValue(): number {
+    return this.products.reduce((sum, product) => sum + ((product.price || 0) * (product.stockQuantity || 0)), 0);
   }
 }

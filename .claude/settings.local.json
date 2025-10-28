@@ -24,7 +24,21 @@
       "Bash(git config:*)",
       "Bash(git add:*)",
       "Bash(git commit -m \"$(cat <<''EOF''\nInitial commit: SuperMarket management system with Excel import\n\n- Add ASP.NET Core Web API backend with Entity Framework Core\n- Add Angular frontend application\n- Implement Product, Category, Transaction, and Inventory models\n- Add Excel import functionality for products (3,839 products)\n- Update Product model with additional fields:\n  * ProductType, Brand, Unit, MaxStockLevel, Weight, Location\n  * DirectSalesEnabled, PointsEnabled\n- Add comprehensive .gitignore for .NET and Angular projects\n- Include test scripts for Excel import functionality\n\n🤖 Generated with [Claude Code](https://claude.com/claude-code)\n\nCo-Authored-By: Claude <noreply@anthropic.com>\nEOF\n)\")",
-      "Bash(git push:*)"
+      "Bash(git push:*)",
+      "Bash(pip3 install:*)",
+      "Bash(dotnet run:*)",
+      "Bash(netstat:*)",
+      "Bash(findstr:*)",
+      "Bash(curl:*)",
+      "Bash(dotnet list:*)",
+      "Bash(npx nswag:*)",
+      "Bash(npm run generate-api:*)",
+      "Bash(echo:*)",
+      "Bash(npm run build:*)",
+      "Bash($env:PYTHONIOENCODING='utf-8')",
+      "Bash(dotnet build:*)",
+      "Bash(timeout /t 10 /nobreak)",
+      "Bash(test:*)"
     ],
     "deny": [],
     "ask": []

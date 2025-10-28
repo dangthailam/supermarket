@@ -2,6 +2,7 @@ using System.Linq.Expressions;
 using Microsoft.EntityFrameworkCore;
 using SuperMarket.API.Data;
 using SuperMarket.API.Interfaces;
+using SuperMarket.API.Models;
 
 namespace SuperMarket.API.Repositories;
 
@@ -72,5 +73,34 @@ public class Repository<T> : IRepository<T> where T : class
     public virtual async Task<bool> AnyAsync(Expression<Func<T, bool>> predicate)
     {
         return await _dbSet.AnyAsync(predicate);
+    }
+
+    public virtual async Task<PaginatedResult<T>> GetPagedAsync(
+        int pageNumber,
+        int pageSize,
+        Expression<Func<T, bool>>? filter = null,
+        Func<IQueryable<T>, IOrderedQueryable<T>>? orderBy = null)
+    {
+        IQueryable<T> query = _dbSet;
+
+        if (filter != null)
+        {
+            query = query.Where(filter);
+        }
+
+        var count = await query.CountAsync();
+
+        if (orderBy != null)
+        {
+            query = orderBy(query);
+        }
+
+        var items = await query
+            .Skip((pageNumber - 1) * pageSize)
+            .Take(pageSize)
+            .AsNoTracking()
+            .ToListAsync();
+
+        return new PaginatedResult<T>(items, count, pageNumber, pageSize);
     }
 }

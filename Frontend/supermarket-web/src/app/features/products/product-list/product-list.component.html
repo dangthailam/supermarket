@@ -1,104 +1,339 @@
 <p-toast></p-toast>
 <p-confirmDialog></p-confirmDialog>
 
-<p-card>
-  <ng-template pTemplate="header">
-    <div class="card-header">
-      <h2>Products</h2>
-      <p-button
-        icon="pi pi-plus"
-        label="Add Product"
-        (onClick)="addProduct()"
-        styleClass="p-button-success">
-      </p-button>
+<div class="products-container">
+  <!-- Left Sidebar Filter Panel -->
+  <aside class="filter-sidebar">
+    <div class="filter-section">
+      <h3 class="filter-title">Hàng hóa</h3>
+      <button class="btn-new">
+        <i class="pi pi-plus"></i>
+        Tạo mới
+      </button>
     </div>
-  </ng-template>
 
-  <div class="search-container">
-    <span class="p-input-icon-left">
-      <i class="pi pi-search"></i>
+    <div class="filter-section">
+      <label class="filter-label">Nhóm hàng</label>
+      <p-dropdown
+        [options]="categories"
+        placeholder="Chọn nhóm hàng"
+        styleClass="w-full"
+        [showClear]="true"
+      >
+      </p-dropdown>
+    </div>
+
+    <div class="filter-section">
+      <label class="filter-label">Tồn kho</label>
+      <div class="radio-group">
+        <div class="radio-item">
+          <p-radioButton
+            name="stock"
+            value="all"
+            [(ngModel)]="stockFilter"
+            inputId="stock-all"
+          >
+          </p-radioButton>
+          <label for="stock-all" class="radio-label">Toàn thời gian</label>
+          <i class="pi pi-angle-right"></i>
+        </div>
+        <div class="radio-item">
+          <p-radioButton
+            name="stock"
+            value="custom"
+            [(ngModel)]="stockFilter"
+            inputId="stock-custom"
+          >
+          </p-radioButton>
+          <label for="stock-custom" class="radio-label">Tùy chỉnh</label>
+          <i class="pi pi-calendar"></i>
+        </div>
+      </div>
+    </div>
+
+    <div class="filter-section">
+      <label class="filter-label">Dự kiện hết hàng</label>
+      <input type="text" pInputText placeholder="Tất cả" class="w-full" />
+    </div>
+
+    <div class="filter-section">
+      <label class="filter-label">Thời gian tạo</label>
+      <div class="radio-group">
+        <div class="radio-item">
+          <p-radioButton
+            name="time"
+            value="all"
+            [(ngModel)]="timeFilter"
+            inputId="time-all"
+          >
+          </p-radioButton>
+          <label for="time-all" class="radio-label">Toàn thời gian</label>
+          <i class="pi pi-angle-right"></i>
+        </div>
+        <div class="radio-item">
+          <p-radioButton
+            name="time"
+            value="custom"
+            [(ngModel)]="timeFilter"
+            inputId="time-custom"
+          >
+          </p-radioButton>
+          <label for="time-custom" class="radio-label">Tùy chỉnh</label>
+          <i class="pi pi-calendar"></i>
+        </div>
+      </div>
+    </div>
+
+    <div class="filter-section">
+      <label class="filter-label">Nhà cung cấp</label>
       <input
         type="text"
         pInputText
-        placeholder="Search products..."
-        (input)="searchProducts($any($event.target).value)"
-        class="search-input"
+        placeholder="Chọn nhà cung cấp"
+        class="w-full"
       />
-    </span>
-  </div>
+    </div>
 
-  <p-table
-    [value]="filteredProducts"
-    [loading]="loading"
-    [paginator]="true"
-    [rows]="10"
-    [rowsPerPageOptions]="[10, 25, 50]"
-    [responsive]="true"
-    styleClass="p-datatable-sm p-datatable-striped"
-    [globalFilterFields]="['sku', 'name', 'categoryName']">
+    <div class="filter-section">
+      <label class="filter-label">Thương hiệu</label>
+      <input
+        type="text"
+        pInputText
+        placeholder="Chọn thương hiệu"
+        class="w-full"
+      />
+    </div>
 
-    <ng-template pTemplate="emptymessage">
-      <tr>
-        <td colspan="7" class="text-center">No products found</td>
-      </tr>
-    </ng-template>
+    <div class="filter-section">
+      <label class="filter-label">Vị trí</label>
+      <input type="text" pInputText placeholder="Chọn vị trí" class="w-full" />
+    </div>
 
-    <ng-template pTemplate="header">
-      <tr>
-        <th pSortableColumn="sku">SKU <p-sortIcon field="sku"></p-sortIcon></th>
-        <th pSortableColumn="name">Name <p-sortIcon field="name"></p-sortIcon></th>
-        <th pSortableColumn="categoryName">Category <p-sortIcon field="categoryName"></p-sortIcon></th>
-        <th pSortableColumn="price">Price <p-sortIcon field="price"></p-sortIcon></th>
-        <th pSortableColumn="stockQuantity">Stock <p-sortIcon field="stockQuantity"></p-sortIcon></th>
-        <th>Status</th>
-        <th>Actions</th>
-      </tr>
-    </ng-template>
+    <div class="filter-section">
+      <label class="filter-label">Loại hàng</label>
+      <input
+        type="text"
+        pInputText
+        placeholder="Chọn loại hàng"
+        class="w-full"
+      />
+    </div>
 
-    <ng-template pTemplate="body" let-product>
-      <tr>
-        <td>{{ product.sku }}</td>
-        <td>{{ product.name }}</td>
-        <td>{{ product.categoryName }}</td>
-        <td>{{ product.price | currency }}</td>
-        <td>
-          <span>{{ product.stockQuantity }}</span>
-          <p-tag
-            *ngIf="product.lowStock"
-            value="Low Stock"
-            severity="warning"
-            styleClass="ml-2">
-          </p-tag>
-        </td>
-        <td>
-          <p-tag
-            [value]="product.isActive ? 'Active' : 'Inactive'"
-            [severity]="product.isActive ? 'success' : 'danger'">
-          </p-tag>
-        </td>
-        <td>
-          <div class="action-buttons">
-            <p-button
-              icon="pi pi-pencil"
-              [text]="true"
-              [rounded]="true"
-              severity="info"
-              (onClick)="editProduct(product.id)"
-              pTooltip="Edit"
-              tooltipPosition="top">
-            </p-button>
-            <p-button
-              icon="pi pi-trash"
-              [text]="true"
-              [rounded]="true"
-              severity="danger"
-              (onClick)="deleteProduct(product)"
-              pTooltip="Delete"
-              tooltipPosition="top">
-            </p-button>
+    <div class="filter-section">
+      <label class="filter-label">Tích điểm</label>
+      <div class="checkbox-group">
+        <div class="checkbox-item">
+          <p-checkbox binary="true" inputId="checkbox-all"></p-checkbox>
+          <label for="checkbox-all">Tất cả</label>
+        </div>
+        <div class="checkbox-item">
+          <p-checkbox binary="true" inputId="checkbox-yes"></p-checkbox>
+          <label for="checkbox-yes">Có</label>
+        </div>
+        <div class="checkbox-item">
+          <p-checkbox binary="true" inputId="checkbox-no"></p-checkbox>
+          <label for="checkbox-no">Không</label>
+        </div>
+      </div>
+    </div>
+
+    <div class="filter-section">
+      <label class="filter-label">Bán trực tiếp</label>
+      <input type="text" pInputText placeholder="Tất cả" class="w-full" />
+    </div>
+  </aside>
+
+  <!-- Main Content Area -->
+  <div class="main-area">
+    <!-- Toolbar -->
+    <div class="toolbar">
+      <div class="toolbar-left">
+        <div class="search-box">
+          <i class="pi pi-search"></i>
+          <input
+            type="text"
+            pInputText
+            placeholder="Theo mã, tên hàng"
+            (input)="searchProducts($any($event.target).value)"
+          />
+        </div>
+        <button class="btn-filter">
+          <i class="pi pi-filter"></i>
+        </button>
+      </div>
+      <div class="toolbar-right">
+        <button class="btn-action" (onClick)="addProduct()">
+          <i class="pi pi-plus"></i>
+          Tạo mới
+        </button>
+        <button class="btn-action">
+          <i class="pi pi-upload"></i>
+          Import file
+        </button>
+        <button class="btn-action">
+          <i class="pi pi-download"></i>
+          Xuất file
+        </button>
+        <button class="btn-icon">
+          <i class="pi pi-th-large"></i>
+        </button>
+        <button class="btn-icon">
+          <i class="pi pi-cog"></i>
+        </button>
+        <button class="btn-icon">
+          <i class="pi pi-question-circle"></i>
+        </button>
+      </div>
+    </div>
+
+    <!-- Products Table -->
+    <div class="p-2 overflow-auto">
+      <p-table
+        [value]="products"
+        [loading]="loading"
+        [paginator]="true"
+        [rows]="pageSize"
+        [totalRecords]="totalRecords"
+        [lazy]="true"
+        (onLazyLoad)="onLazyLoad($event)"
+        [rowsPerPageOptions]="[10, 20, 50, 100]"
+        [showCurrentPageReport]="true"
+        currentPageReportTemplate="Hiển thị {first} đến {last} của {totalRecords} sản phẩm"
+        styleClass="p-datatable-sm p-datatable-striped"
+        [tableStyle]="{ 'min-width': '50rem' }"
+      >
+        <ng-template pTemplate="header">
+          <tr>
+            <th style="width: 3rem" class="text-center">
+              <p-checkbox binary="true"></p-checkbox>
+            </th>
+            <th pSortableColumn="sku" style="width: 2rem"></th>
+            <th pSortableColumn="sku" style="width: 5rem" class="p-2">
+              Mã hàng
+              <p-sortIcon field="sku"></p-sortIcon>
+            </th>
+            <th pSortableColumn="name" class="p-2">
+              Tên hàng
+              <p-sortIcon field="name"></p-sortIcon>
+            </th>
+            <th pSortableColumn="price" style="width: 10rem">
+              Giá bán
+              <p-sortIcon field="price"></p-sortIcon>
+            </th>
+            <th pSortableColumn="costPrice" style="width: 10rem">
+              Giá vốn
+              <p-sortIcon field="costPrice"></p-sortIcon>
+            </th>
+            <th pSortableColumn="stockQuantity" style="width: 8rem">
+              Tồn kho
+              <p-sortIcon field="stockQuantity"></p-sortIcon>
+            </th>
+            <th style="width: 8rem">Khách đặt</th>
+            <th style="width: 10rem">Thời gian tạo</th>
+            <th style="width: 10rem">Dự kiến hết hàng</th>
+            <th style="width: 8rem">Thao tác</th>
+          </tr>
+        </ng-template>
+
+        <ng-template pTemplate="body" let-product>
+          <tr>
+            <td class="text-center">
+              <p-checkbox binary="true"></p-checkbox>
+            </td>
+            <td>
+              <img
+                [src]="product.imageUrl || 'assets/placeholder.svg'"
+                [alt]=""
+                width="32"
+                class="shadow-2 border-round"
+              />
+            </td>
+            <td class="p-2">
+              <span>{{ product.sku }}</span>
+            </td>
+            <td class="p-2">
+              {{ product.name }}
+            </td>
+            <td>
+              <span class="text-primary"
+                >{{ product.price | number : "1.0-0" }} đ</span
+              >
+            </td>
+            <td>{{ product.costPrice | number : "1.0-0" }} đ</td>
+            <td>
+              <span
+                [class]="
+                  product.stockQuantity! <= 10 ? 'text-red-500 font-bold' : ''
+                "
+              >
+                {{ product.stockQuantity }}
+              </span>
+            </td>
+            <td>---</td>
+            <td>---</td>
+            <td>---</td>
+            <td>
+              <div class="flex gap-2">
+                <button
+                  pButton
+                  type="button"
+                  icon="pi pi-pencil"
+                  class="p-button-rounded p-button-text p-button-sm"
+                  (click)="editProduct(product.id!)"
+                  pTooltip="Chỉnh sửa"
+                ></button>
+                <button
+                  pButton
+                  type="button"
+                  icon="pi pi-trash"
+                  class="p-button-rounded p-button-text p-button-danger p-button-sm"
+                  (click)="deleteProduct(product)"
+                  pTooltip="Xóa"
+                ></button>
+              </div>
+            </td>
+          </tr>
+        </ng-template>
+
+        <ng-template pTemplate="emptymessage">
+          <tr>
+            <td colspan="10" class="text-center">
+              <div class="p-4">
+                <i
+                  class="pi pi-inbox"
+                  style="font-size: 3rem; color: var(--surface-400)"
+                ></i>
+                <p class="mt-3 text-surface-500">Không tìm thấy sản phẩm nào</p>
+              </div>
+            </td>
+          </tr>
+        </ng-template>
+
+        <ng-template pTemplate="loadingbody">
+          <tr>
+            <td colspan="10">
+              <div class="flex align-items-center justify-content-center p-4">
+                <i class="pi pi-spin pi-spinner" style="font-size: 2rem"></i>
+                <span class="ml-2">Đang tải dữ liệu...</span>
+              </div>
+            </td>
+          </tr>
+        </ng-template>
+
+        <ng-template pTemplate="summary">
+          <div class="flex align-items-center justify-content-between">
+            <span
+              >Tổng giá trị tồn kho:
+              <strong>{{
+                getTotalValue() | currency : "VND" : "symbol" : "1.0-0"
+              }}</strong></span
+            >
+            <span
+              >Tổng số sản phẩm: <strong>{{ totalRecords }}</strong></span
+            >
           </div>
-        </td>
-      </tr>
-    </ng-template>
-  </p-table>
-</p-card>
+        </ng-template>
+      </p-table>
+    </div>
+  </div>
+</div>

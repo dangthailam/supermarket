@@ -23,9 +23,6 @@ public class ExcelImportService : IExcelImportService
     {
         var result = new ExcelImportResult();
 
-        // Set EPPlus license context
-        ExcelPackage.LicenseContext = LicenseContext.NonCommercial;
-
         using var package = new ExcelPackage(new FileInfo(filePath));
         var worksheet = package.Workbook.Worksheets[0];
 

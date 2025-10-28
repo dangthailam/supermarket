@@ -1,4 +1,5 @@
 using System.Linq.Expressions;
+using SuperMarket.API.Models;
 
 namespace SuperMarket.API.Interfaces;
 
@@ -15,4 +16,9 @@ public interface IRepository<T> where T : class
     void RemoveRange(IEnumerable<T> entities);
     Task<int> CountAsync(Expression<Func<T, bool>>? predicate = null);
     Task<bool> AnyAsync(Expression<Func<T, bool>> predicate);
+    Task<PaginatedResult<T>> GetPagedAsync(
+        int pageNumber,
+        int pageSize,
+        Expression<Func<T, bool>>? filter = null,
+        Func<IQueryable<T>, IOrderedQueryable<T>>? orderBy = null);
 }

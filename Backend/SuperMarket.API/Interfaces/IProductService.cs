@@ -1,10 +1,12 @@
 using SuperMarket.API.DTOs;
+using SuperMarket.API.Models;
 
 namespace SuperMarket.API.Interfaces;
 
 public interface IProductService
 {
     Task<IEnumerable<ProductDto>> GetAllProductsAsync();
+    Task<PaginatedResult<ProductDto>> GetProductsPagedAsync(PaginationParams paginationParams);
     Task<IEnumerable<ProductDto>> GetProductsByCategoryAsync(int categoryId);
     Task<IEnumerable<ProductDto>> GetLowStockProductsAsync();
     Task<ProductDto?> GetProductByIdAsync(int id);

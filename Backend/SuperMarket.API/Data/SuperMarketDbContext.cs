@@ -28,6 +28,12 @@ public class SuperMarketDbContext : DbContext
             entity.Property(e => e.Name).IsRequired().HasMaxLength(100);
             entity.Property(e => e.Description).HasMaxLength(500);
             entity.HasIndex(e => e.Name);
+
+            // Self-referencing relationship for category hierarchy
+            entity.HasOne(e => e.ParentCategory)
+                .WithMany(c => c.SubCategories)
+                .HasForeignKey(e => e.ParentCategoryId)
+                .OnDelete(DeleteBehavior.Restrict);
         });
 
         // Product configuration

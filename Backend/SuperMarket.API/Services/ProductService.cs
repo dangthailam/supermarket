@@ -27,6 +27,56 @@ public class ProductService : IProductService
         return products.Select(MapToDto);
     }
 
+    public async Task<PaginatedResult<ProductDto>> GetProductsPagedAsync(PaginationParams paginationParams)
+    {
+        IQueryable<Product> query = _context.Products.Include(p => p.Category);
+
+        // Apply search filter
+        if (!string.IsNullOrWhiteSpace(paginationParams.SearchTerm))
+        {
+            var searchTerm = paginationParams.SearchTerm.ToLower();
+            query = query.Where(p =>
+                p.Name.ToLower().Contains(searchTerm) ||
+                p.SKU.ToLower().Contains(searchTerm) ||
+                (p.Barcode != null && p.Barcode.ToLower().Contains(searchTerm)) ||
+                (p.Brand != null && p.Brand.ToLower().Contains(searchTerm))
+            );
+        }
+
+        // Apply sorting
+        query = paginationParams.SortBy?.ToLower() switch
+        {
+            "name" => paginationParams.SortDescending
+                ? query.OrderByDescending(p => p.Name)
+                : query.OrderBy(p => p.Name),
+            "sku" => paginationParams.SortDescending
+                ? query.OrderByDescending(p => p.SKU)
+                : query.OrderBy(p => p.SKU),
+            "price" => paginationParams.SortDescending
+                ? query.OrderByDescending(p => p.Price)
+                : query.OrderBy(p => p.Price),
+            "stock" => paginationParams.SortDescending
+                ? query.OrderByDescending(p => p.StockQuantity)
+                : query.OrderBy(p => p.StockQuantity),
+            "createdat" => paginationParams.SortDescending
+                ? query.OrderByDescending(p => p.CreatedAt)
+                : query.OrderBy(p => p.CreatedAt),
+            _ => query.OrderBy(p => p.Id) // Default sorting
+        };
+
+        var count = await query.CountAsync();
+
+        var products = await query
+            .Skip((paginationParams.PageNumber - 1) * paginationParams.PageSize)
+            .Take(paginationParams.PageSize)
+            .AsNoTracking()
+            .ToListAsync();
+
+        var productDtos = products.Select(MapToDto);
+
+        return new PaginatedResult<ProductDto>(productDtos, count, paginationParams.PageNumber, paginationParams.PageSize);
+    }
+
     public async Task<IEnumerable<ProductDto>> GetProductsByCategoryAsync(int categoryId)
     {
         var products = await _context.Products

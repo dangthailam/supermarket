@@ -2,7 +2,7 @@ import requests
 import os
 
 # Configuration
-api_url = "http://localhost:5000/api/products/import-excel"
+api_url = "http://localhost:5193/api/products/import-excel"
 excel_file_path = "DanhSachSanPham_KV17102025-132919-053.xlsx"
 
 # Check if file exists

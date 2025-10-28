@@ -9,6 +9,11 @@ public class Category
     public DateTime CreatedAt { get; set; }
     public DateTime? UpdatedAt { get; set; }
 
+    // Self-referencing relationship for hierarchy
+    public int? ParentCategoryId { get; set; }
+    public Category? ParentCategory { get; set; }
+    public ICollection<Category> SubCategories { get; set; } = new List<Category>();
+
     // Navigation property
     public ICollection<Product> Products { get; set; } = new List<Product>();
 }

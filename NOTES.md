@@ -124,7 +124,7 @@
 - Mobile-first responsive design
 - Forms use Reactive Forms approach
 - Application runs on port 4201 (backend supports both 4200 and 4201)
-- Backend API at http://localhost:5000
+- Backend API at https://localhost:7268
 - EPPlus library for Excel file processing
 - Excel import supports both insert and update based on SKU
 - Automatic category creation during Excel import

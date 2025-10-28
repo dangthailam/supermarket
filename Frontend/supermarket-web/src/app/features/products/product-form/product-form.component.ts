@@ -2,10 +2,7 @@ import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
-import { ProductService } from '../../../core/services/product.service';
-import { CategoryService } from '../../../core/services/category.service';
-import { Product, CreateProduct } from '../../../core/models/product.model';
-import { Category } from '../../../core/models/category.model';
+import { SuperMarketApiClient, ProductDto, CreateProductDto, UpdateProductDto, CategoryDto } from '../../../core/api/api-client';
 import { CardModule } from 'primeng/card';
 import { InputTextModule } from 'primeng/inputtext';
 import { InputTextareaModule } from 'primeng/inputtextarea';
@@ -41,12 +38,11 @@ export class ProductFormComponent implements OnInit {
   productId?: number;
   loading = false;
   error = '';
-  categories: Category[] = [];
+  categories: CategoryDto[] = [];
 
   constructor(
     private fb: FormBuilder,
-    private productService: ProductService,
-    private categoryService: CategoryService,
+    private apiClient: SuperMarketApiClient,
     private route: ActivatedRoute,
     private router: Router
   ) {
@@ -65,8 +61,8 @@ export class ProductFormComponent implements OnInit {
   }
 
   loadCategories(): void {
-    this.categoryService.getAllCategories().subscribe({
-      next: (categories: Category[]) => {
+    this.apiClient.categoriesAll().subscribe({
+      next: (categories: CategoryDto[]) => {
         this.categories = categories;
       },
       error: (err: any) => {
@@ -96,8 +92,8 @@ export class ProductFormComponent implements OnInit {
     if (!this.productId) return;
 
     this.loading = true;
-    this.productService.getProductById(this.productId).subscribe({
-      next: (product) => {
+    this.apiClient.productsGET(this.productId).subscribe({
+      next: (product: ProductDto) => {
         this.productForm.patchValue({
           sku: product.sku,
           name: product.name,
@@ -134,11 +130,19 @@ export class ProductFormComponent implements OnInit {
 
     if (this.isEditMode && this.productId) {
       // Update existing product
-      const updateData = this.productForm.value;
-      delete updateData.sku; // SKU is not updatable
-      delete updateData.stockQuantity; // Stock is managed via inventory
+      const updateData: UpdateProductDto = {
+        name: this.productForm.value.name,
+        description: this.productForm.value.description,
+        barcode: this.productForm.value.barcode,
+        price: this.productForm.value.price,
+        costPrice: this.productForm.value.costPrice,
+        minStockLevel: this.productForm.value.minStockLevel,
+        categoryId: this.productForm.value.categoryId,
+        imageUrl: this.productForm.value.imageUrl,
+        isActive: this.productForm.value.isActive
+      };
 
-      this.productService.updateProduct(this.productId, updateData).subscribe({
+      this.apiClient.productsPUT(this.productId, updateData).subscribe({
         next: () => {
           this.router.navigate(['/products']);
         },
@@ -150,8 +154,8 @@ export class ProductFormComponent implements OnInit {
       });
     } else {
       // Create new product
-      const newProduct: CreateProduct = this.productForm.value;
-      this.productService.createProduct(newProduct).subscribe({
+      const newProduct: CreateProductDto = this.productForm.value;
+      this.apiClient.productsPOST(newProduct).subscribe({
         next: () => {
           this.router.navigate(['/products']);
         },

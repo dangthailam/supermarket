@@ -1,8 +1,7 @@
 using Microsoft.AspNetCore.Mvc;
-using SuperMarket.API.DTOs;
-using SuperMarket.API.Interfaces;
-using SuperMarket.API.Services;
-using SuperMarket.API.Models;
+using SuperMarket.Application.DTOs;
+using SuperMarket.Application.Services;
+using SuperMarket.Domain.Common;
 
 namespace SuperMarket.API.Controllers;
 
@@ -11,12 +10,10 @@ namespace SuperMarket.API.Controllers;
 public class ProductsController : ControllerBase
 {
     private readonly IProductService _productService;
-    private readonly IExcelImportService _excelImportService;
 
-    public ProductsController(IProductService productService, IExcelImportService excelImportService)
+    public ProductsController(IProductService productService)
     {
         _productService = productService;
-        _excelImportService = excelImportService;
     }
 
     [HttpGet]
@@ -47,13 +44,14 @@ public class ProductsController : ControllerBase
         return Ok(result);
     }
 
-    [HttpGet("{id:int}")]
-    public async Task<ActionResult<ProductDto>> GetProductById(int id)
+    [HttpGet("{id:guid}")]
+    public async Task<ActionResult<ProductDto>> GetProductById(Guid id)
     {
         var product = await _productService.GetProductByIdAsync(id);
+        
         if (product == null)
             return NotFound();
-
+        
         return Ok(product);
     }
 
@@ -61,14 +59,15 @@ public class ProductsController : ControllerBase
     public async Task<ActionResult<ProductDto>> GetProductByBarcode(string barcode)
     {
         var product = await _productService.GetProductByBarcodeAsync(barcode);
+        
         if (product == null)
             return NotFound();
-
+        
         return Ok(product);
     }
 
-    [HttpGet("category/{categoryId}")]
-    public async Task<ActionResult<IEnumerable<ProductDto>>> GetProductsByCategory(int categoryId)
+    [HttpGet("category/{categoryId:guid}")]
+    public async Task<ActionResult<IEnumerable<ProductDto>>> GetProductsByCategory(Guid categoryId)
     {
         var products = await _productService.GetProductsByCategoryAsync(categoryId);
         return Ok(products);
@@ -81,9 +80,12 @@ public class ProductsController : ControllerBase
         return Ok(products);
     }
 
-    [HttpGet("search/{searchTerm}")]
-    public async Task<ActionResult<IEnumerable<ProductDto>>> SearchProducts(string searchTerm)
+    [HttpGet("search")]
+    public async Task<ActionResult<IEnumerable<ProductDto>>> SearchProducts([FromQuery] string searchTerm)
     {
+        if (string.IsNullOrWhiteSpace(searchTerm))
+            return BadRequest("Search term is required");
+
         var products = await _productService.SearchProductsAsync(searchTerm);
         return Ok(products);
     }
@@ -91,82 +93,29 @@ public class ProductsController : ControllerBase
     [HttpPost]
     public async Task<ActionResult<ProductDto>> CreateProduct([FromBody] CreateProductDto dto)
     {
-        try
-        {
-            var product = await _productService.CreateProductAsync(dto);
-            return CreatedAtAction(nameof(GetProductById), new { id = product.Id }, product);
-        }
-        catch (Exception ex)
-        {
-            return BadRequest(new { message = ex.Message });
-        }
+        var product = await _productService.CreateProductAsync(dto);
+        return CreatedAtAction(nameof(GetProductById), new { id = product.Id }, product);
     }
 
-    [HttpPut("{id}")]
-    public async Task<ActionResult<ProductDto>> UpdateProduct(int id, [FromBody] UpdateProductDto dto)
+    [HttpPut("{id:guid}")]
+    public async Task<ActionResult<ProductDto>> UpdateProduct(Guid id, [FromBody] UpdateProductDto dto)
     {
-        try
-        {
-            var product = await _productService.UpdateProductAsync(id, dto);
-            if (product == null)
-                return NotFound();
-
-            return Ok(product);
-        }
-        catch (Exception ex)
-        {
-            return BadRequest(new { message = ex.Message });
-        }
-    }
-
-    [HttpDelete("{id}")]
-    public async Task<ActionResult> DeleteProduct(int id)
-    {
-        var result = await _productService.DeleteProductAsync(id);
-        if (!result)
+        var product = await _productService.UpdateProductAsync(id, dto);
+        
+        if (product == null)
             return NotFound();
-
-        return NoContent();
+        
+        return Ok(product);
     }
 
-    [HttpPost("import-excel")]
-    public async Task<ActionResult> ImportFromExcel(IFormFile file)
+    [HttpDelete("{id:guid}")]
+    public async Task<ActionResult> DeleteProduct(Guid id)
     {
-        if (file == null || file.Length == 0)
-            return BadRequest(new { message = "No file uploaded" });
-
-        if (!file.FileName.EndsWith(".xlsx", StringComparison.OrdinalIgnoreCase))
-            return BadRequest(new { message = "Only .xlsx files are supported" });
-
-        try
-        {
-            // Save file temporarily
-            var tempPath = Path.Combine(Path.GetTempPath(), file.FileName);
-            using (var stream = new FileStream(tempPath, FileMode.Create))
-            {
-                await file.CopyToAsync(stream);
-            }
-
-            // Import from Excel
-            var result = await _excelImportService.ImportProductsFromExcel(tempPath);
-
-            // Clean up temp file
-            if (System.IO.File.Exists(tempPath))
-                System.IO.File.Delete(tempPath);
-
-            return Ok(new
-            {
-                success = result.Success,
-                imported = result.Imported,
-                updated = result.Updated,
-                skipped = result.Skipped,
-                errors = result.Errors,
-                summary = result.Summary
-            });
-        }
-        catch (Exception ex)
-        {
-            return BadRequest(new { message = $"Import failed: {ex.Message}" });
-        }
+        var success = await _productService.DeleteProductAsync(id);
+        
+        if (!success)
+            return NotFound();
+        
+        return NoContent();
     }
 }

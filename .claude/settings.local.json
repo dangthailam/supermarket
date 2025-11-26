@@ -38,7 +38,8 @@
       "Bash($env:PYTHONIOENCODING='utf-8')",
       "Bash(dotnet build:*)",
       "Bash(timeout /t 10 /nobreak)",
-      "Bash(test:*)"
+      "Bash(test:*)",
+      "Bash(git commit -m \"$(cat <<''EOF''\nAdd category hierarchy, pagination, PrimeNG table, and UI improvements\n\nBackend changes:\n- Add category hierarchy with parent-child relationships\n- Create migration AddCategoryHierarchy for self-referencing Category model\n- Add PaginatedResult model for paginated API responses\n- Implement paged products endpoint with search and sorting\n- Update CategoryDto with parent/child fields\n- Update CategoriesController to return DTOs with hierarchy\n- Add GetProductsPagedAsync to ProductService\n- Create Python script to reorganize categories from flat to hierarchical structure\n\nFrontend changes:\n- Replace custom grid with PrimeNG p-table component\n- Add lazy loading, pagination, and sorting to product list\n- Integrate PrimeFlex CSS utility framework\n- Generate TypeScript API client using NSwag\n- Update all components to use generated API client\n- Remove manual service/model files in favor of generated client\n- Add SVG placeholder image for products without images\n- Update font family to system font stack for PrimeNG components\n- Add responsive layout and styling improvements\n\nData migration:\n- Parse 311 categories into 316 unique hierarchical categories\n- Reorganize 70 root categories and 246 sub-categories\n- Update 3,839 products to use leaf categories\n\n🤖 Generated with [Claude Code](https://claude.com/claude-code)\n\nCo-Authored-By: Claude <noreply@anthropic.com>\nEOF\n)\")"
     ],
     "deny": [],
     "ask": []

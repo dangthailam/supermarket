@@ -1,8 +1,8 @@
 // This is a test console application to import the Excel file directly
 // To use this, create a new Console project or integrate into the API
 
-using SuperMarket.API.Data;
-using SuperMarket.API.Services;
+using SuperMarket.Infrastructure.Data;
+using SuperMarket.Infrastructure.Services;
 using Microsoft.EntityFrameworkCore;
 
 namespace SuperMarket.API;

@@ -1,8 +1,5 @@
-using Microsoft.EntityFrameworkCore;
-using SuperMarket.API.Data;
-using SuperMarket.API.Interfaces;
-using SuperMarket.API.Repositories;
-using SuperMarket.API.Services;
+using SuperMarket.Application;
+using SuperMarket.Infrastructure;
 using OfficeOpenXml;
 
 // Set EPPlus license for version 8+
@@ -10,18 +7,12 @@ ExcelPackage.License.SetNonCommercialPersonal("SuperMarket App");
 
 var builder = WebApplication.CreateBuilder(args);
 
-// Add DbContext
-builder.Services.AddDbContext<SuperMarketDbContext>(options =>
-    options.UseSqlServer(
-        builder.Configuration.GetConnectionString("DefaultConnection"),
-        sqlOptions => sqlOptions.EnableRetryOnFailure()
-    ));
+
+builder.Services.AddApplication();
+
+builder.Services.AddInfrastructure(builder.Configuration);
 
 // Add repositories and services
-builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
-builder.Services.AddScoped<IProductService, ProductService>();
-builder.Services.AddScoped<ITransactionService, TransactionService>();
-builder.Services.AddScoped<IExcelImportService, ExcelImportService>();
 
 // Add controllers
 builder.Services.AddControllers();

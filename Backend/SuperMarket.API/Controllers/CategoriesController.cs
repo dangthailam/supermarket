@@ -1,8 +1,8 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using SuperMarket.API.Data;
-using SuperMarket.API.Models;
-using SuperMarket.API.DTOs;
+using SuperMarket.Infrastructure.Data;
+using SuperMarket.Domain.Entities;
+using SuperMarket.Application.DTOs;
 
 namespace SuperMarket.API.Controllers;
 
@@ -54,8 +54,8 @@ public class CategoriesController : ControllerBase
     }
 
     // GET: api/categories/{id}
-    [HttpGet("{id}")]
-    public async Task<ActionResult<CategoryDto>> GetCategory(int id)
+    [HttpGet("{id:guid}")]
+    public async Task<ActionResult<CategoryDto>> GetCategory(Guid id)
     {
         var category = await _context.Categories
             .Include(c => c.ParentCategory)

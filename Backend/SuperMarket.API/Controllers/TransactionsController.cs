@@ -1,6 +1,6 @@
 using Microsoft.AspNetCore.Mvc;
-using SuperMarket.API.DTOs;
-using SuperMarket.API.Interfaces;
+using SuperMarket.Application.Interfaces;
+using SuperMarket.Application.DTOs;
 
 namespace SuperMarket.API.Controllers;
 
@@ -15,8 +15,8 @@ public class TransactionsController : ControllerBase
         _transactionService = transactionService;
     }
 
-    [HttpGet("{id}")]
-    public async Task<ActionResult<TransactionDto>> GetTransactionById(int id)
+    [HttpGet("{id:guid}")]
+    public async Task<ActionResult<TransactionDto>> GetTransactionById(Guid id)
     {
         var transaction = await _transactionService.GetTransactionByIdAsync(id);
         if (transaction == null)
@@ -62,8 +62,8 @@ public class TransactionsController : ControllerBase
         }
     }
 
-    [HttpPost("{id}/cancel")]
-    public async Task<ActionResult> CancelTransaction(int id)
+    [HttpPost("{id:guid}/cancel")]
+    public async Task<ActionResult> CancelTransaction(Guid id)
     {
         try
         {

@@ -523,8 +523,8 @@ appsettings.Production.json
 
 # Excel files (if you don't want to commit them)
 # Uncomment the line below if you want to ignore Excel files
-# *.xlsx
-# *.xls
+*.xlsx
+*.xls
 
 # Backup files
 *.bak

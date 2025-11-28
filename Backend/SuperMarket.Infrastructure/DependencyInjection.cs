@@ -27,6 +27,7 @@ public static class DependencyInjection
         // Add Infrastructure services
         services.AddScoped<IExcelImportService, ExcelImportService>();
         services.AddScoped<ITransactionService, TransactionService>();
+        services.AddScoped<ISkuGeneratorService, SkuGeneratorService>();
 
         return services;
     }

@@ -1,11 +1,10 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { RouterLink } from '@angular/router';
 import { Card } from 'primeng/card';
 
 @Component({
     selector: 'app-dashboard',
-    imports: [CommonModule, RouterLink, Card],
+    imports: [CommonModule, Card],
     template: `
       <div class="p-3">
         <h2 class="mb-3">Dashboard</h2>

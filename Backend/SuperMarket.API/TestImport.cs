@@ -3,6 +3,7 @@
 
 using SuperMarket.Infrastructure.Data;
 using SuperMarket.Infrastructure.Services;
+using SuperMarket.Infrastructure.Repositories;
 using Microsoft.EntityFrameworkCore;
 
 namespace SuperMarket.API;
@@ -18,7 +19,12 @@ public class TestImport
             .Options;
 
         using var context = new SuperMarketDbContext(options);
-        var importService = new ExcelImportService(context);
+        
+        // Create a mock SKU generator or use the real one with proper DI
+        // For testing purposes, we'll create dependencies manually
+        var unitOfWork = new SuperMarket.Infrastructure.Repositories.UnitOfWork(context);
+        var skuGenerator = new SuperMarket.Infrastructure.Services.SkuGeneratorService(unitOfWork);
+        var importService = new ExcelImportService(context, skuGenerator);
 
         var filePath = @"C:\Users\lamtp\RiderProjects\Lam\LocalServices\SuperMarket\DanhSachSanPham_KV17102025-132919-053.xlsx";
 

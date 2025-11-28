@@ -9,10 +9,12 @@ namespace SuperMarket.Infrastructure.Services;
 public class ExcelImportService : IExcelImportService
 {
     private readonly SuperMarketDbContext _context;
+    private readonly ISkuGeneratorService _skuGenerator;
 
-    public ExcelImportService(SuperMarketDbContext context)
+    public ExcelImportService(SuperMarketDbContext context, ISkuGeneratorService skuGenerator)
     {
         _context = context;
+        _skuGenerator = skuGenerator;
     }
 
     public async Task<ExcelImportResult> ImportProductsFromExcel(string filePath)
@@ -137,8 +139,18 @@ public class ExcelImportService : IExcelImportService
                 }
                 else
                 {
+                    // Generate SKU if not provided or if it already exists
+                    var sku = maHang;
+                    if (string.IsNullOrWhiteSpace(sku) || await _context.Products.AnyAsync(p => p.SKU == sku))
+                    {
+                        sku = await _skuGenerator.GenerateSkuAsync(category.Id, tenHang);
+                    }
+
                     // Create new product using constructor
-                    var product = new Product(tenHang, maHang, category, giaBan, giaVon);
+                    var product = new Product(tenHang, category, giaBan, giaVon);
+                    
+                    // Set the SKU
+                    product.SetSku(sku);
                     
                     // Update additional details
                     product.UpdateDetails(

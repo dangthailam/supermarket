@@ -787,6 +787,347 @@ export class SuperMarketApiClient {
     /**
      * @return OK
      */
+    providersAll(): Observable<ProviderDto[]> {
+        let url_ = this.baseUrl + "/api/Providers";
+        url_ = url_.replace(/[?&]$/, "");
+
+        let options_ : any = {
+            observe: "response",
+            responseType: "blob",
+            headers: new HttpHeaders({
+                "Accept": "application/json"
+            })
+        };
+
+        return this.http.request("get", url_, options_).pipe(_observableMergeMap((response_ : any) => {
+            return this.processProvidersAll(response_);
+        })).pipe(_observableCatch((response_: any) => {
+            if (response_ instanceof HttpResponseBase) {
+                try {
+                    return this.processProvidersAll(response_ as any);
+                } catch (e) {
+                    return _observableThrow(e) as any as Observable<ProviderDto[]>;
+                }
+            } else
+                return _observableThrow(response_) as any as Observable<ProviderDto[]>;
+        }));
+    }
+
+    protected processProvidersAll(response: HttpResponseBase): Observable<ProviderDto[]> {
+        const status = response.status;
+        const responseBlob =
+            response instanceof HttpResponse ? response.body :
+            (response as any).error instanceof Blob ? (response as any).error : undefined;
+
+        let _headers: any = {}; if (response.headers) { for (let key of response.headers.keys()) { _headers[key] = response.headers.get(key); }}
+        if (status === 200) {
+            return blobToText(responseBlob).pipe(_observableMergeMap((_responseText: string) => {
+            let result200: any = null;
+            result200 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver) as ProviderDto[];
+            return _observableOf(result200);
+            }));
+        } else if (status !== 200 && status !== 204) {
+            return blobToText(responseBlob).pipe(_observableMergeMap((_responseText: string) => {
+            return throwException("An unexpected server error occurred.", status, _responseText, _headers);
+            }));
+        }
+        return _observableOf(null as any);
+    }
+
+    /**
+     * @param body (optional) 
+     * @return OK
+     */
+    providersPOST(body?: CreateProviderDto | undefined): Observable<ProviderDto> {
+        let url_ = this.baseUrl + "/api/Providers";
+        url_ = url_.replace(/[?&]$/, "");
+
+        const content_ = JSON.stringify(body);
+
+        let options_ : any = {
+            body: content_,
+            observe: "response",
+            responseType: "blob",
+            headers: new HttpHeaders({
+                "Content-Type": "application/json",
+                "Accept": "application/json"
+            })
+        };
+
+        return this.http.request("post", url_, options_).pipe(_observableMergeMap((response_ : any) => {
+            return this.processProvidersPOST(response_);
+        })).pipe(_observableCatch((response_: any) => {
+            if (response_ instanceof HttpResponseBase) {
+                try {
+                    return this.processProvidersPOST(response_ as any);
+                } catch (e) {
+                    return _observableThrow(e) as any as Observable<ProviderDto>;
+                }
+            } else
+                return _observableThrow(response_) as any as Observable<ProviderDto>;
+        }));
+    }
+
+    protected processProvidersPOST(response: HttpResponseBase): Observable<ProviderDto> {
+        const status = response.status;
+        const responseBlob =
+            response instanceof HttpResponse ? response.body :
+            (response as any).error instanceof Blob ? (response as any).error : undefined;
+
+        let _headers: any = {}; if (response.headers) { for (let key of response.headers.keys()) { _headers[key] = response.headers.get(key); }}
+        if (status === 200) {
+            return blobToText(responseBlob).pipe(_observableMergeMap((_responseText: string) => {
+            let result200: any = null;
+            result200 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver) as ProviderDto;
+            return _observableOf(result200);
+            }));
+        } else if (status !== 200 && status !== 204) {
+            return blobToText(responseBlob).pipe(_observableMergeMap((_responseText: string) => {
+            return throwException("An unexpected server error occurred.", status, _responseText, _headers);
+            }));
+        }
+        return _observableOf(null as any);
+    }
+
+    /**
+     * @param pageNumber (optional) 
+     * @param pageSize (optional) 
+     * @param searchTerm (optional) 
+     * @param sortBy (optional) 
+     * @param sortDescending (optional) 
+     * @return OK
+     */
+    paged2(pageNumber?: number | undefined, pageSize?: number | undefined, searchTerm?: string | undefined, sortBy?: string | undefined, sortDescending?: boolean | undefined): Observable<ProviderDtoPaginatedResult> {
+        let url_ = this.baseUrl + "/api/Providers/paged?";
+        if (pageNumber === null)
+            throw new globalThis.Error("The parameter 'pageNumber' cannot be null.");
+        else if (pageNumber !== undefined)
+            url_ += "pageNumber=" + encodeURIComponent("" + pageNumber) + "&";
+        if (pageSize === null)
+            throw new globalThis.Error("The parameter 'pageSize' cannot be null.");
+        else if (pageSize !== undefined)
+            url_ += "pageSize=" + encodeURIComponent("" + pageSize) + "&";
+        if (searchTerm === null)
+            throw new globalThis.Error("The parameter 'searchTerm' cannot be null.");
+        else if (searchTerm !== undefined)
+            url_ += "searchTerm=" + encodeURIComponent("" + searchTerm) + "&";
+        if (sortBy === null)
+            throw new globalThis.Error("The parameter 'sortBy' cannot be null.");
+        else if (sortBy !== undefined)
+            url_ += "sortBy=" + encodeURIComponent("" + sortBy) + "&";
+        if (sortDescending === null)
+            throw new globalThis.Error("The parameter 'sortDescending' cannot be null.");
+        else if (sortDescending !== undefined)
+            url_ += "sortDescending=" + encodeURIComponent("" + sortDescending) + "&";
+        url_ = url_.replace(/[?&]$/, "");
+
+        let options_ : any = {
+            observe: "response",
+            responseType: "blob",
+            headers: new HttpHeaders({
+                "Accept": "application/json"
+            })
+        };
+
+        return this.http.request("get", url_, options_).pipe(_observableMergeMap((response_ : any) => {
+            return this.processPaged2(response_);
+        })).pipe(_observableCatch((response_: any) => {
+            if (response_ instanceof HttpResponseBase) {
+                try {
+                    return this.processPaged2(response_ as any);
+                } catch (e) {
+                    return _observableThrow(e) as any as Observable<ProviderDtoPaginatedResult>;
+                }
+            } else
+                return _observableThrow(response_) as any as Observable<ProviderDtoPaginatedResult>;
+        }));
+    }
+
+    protected processPaged2(response: HttpResponseBase): Observable<ProviderDtoPaginatedResult> {
+        const status = response.status;
+        const responseBlob =
+            response instanceof HttpResponse ? response.body :
+            (response as any).error instanceof Blob ? (response as any).error : undefined;
+
+        let _headers: any = {}; if (response.headers) { for (let key of response.headers.keys()) { _headers[key] = response.headers.get(key); }}
+        if (status === 200) {
+            return blobToText(responseBlob).pipe(_observableMergeMap((_responseText: string) => {
+            let result200: any = null;
+            result200 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver) as ProviderDtoPaginatedResult;
+            return _observableOf(result200);
+            }));
+        } else if (status !== 200 && status !== 204) {
+            return blobToText(responseBlob).pipe(_observableMergeMap((_responseText: string) => {
+            return throwException("An unexpected server error occurred.", status, _responseText, _headers);
+            }));
+        }
+        return _observableOf(null as any);
+    }
+
+    /**
+     * @return OK
+     */
+    providersGET(id: string): Observable<ProviderDto> {
+        let url_ = this.baseUrl + "/api/Providers/{id}";
+        if (id === undefined || id === null)
+            throw new globalThis.Error("The parameter 'id' must be defined.");
+        url_ = url_.replace("{id}", encodeURIComponent("" + id));
+        url_ = url_.replace(/[?&]$/, "");
+
+        let options_ : any = {
+            observe: "response",
+            responseType: "blob",
+            headers: new HttpHeaders({
+                "Accept": "application/json"
+            })
+        };
+
+        return this.http.request("get", url_, options_).pipe(_observableMergeMap((response_ : any) => {
+            return this.processProvidersGET(response_);
+        })).pipe(_observableCatch((response_: any) => {
+            if (response_ instanceof HttpResponseBase) {
+                try {
+                    return this.processProvidersGET(response_ as any);
+                } catch (e) {
+                    return _observableThrow(e) as any as Observable<ProviderDto>;
+                }
+            } else
+                return _observableThrow(response_) as any as Observable<ProviderDto>;
+        }));
+    }
+
+    protected processProvidersGET(response: HttpResponseBase): Observable<ProviderDto> {
+        const status = response.status;
+        const responseBlob =
+            response instanceof HttpResponse ? response.body :
+            (response as any).error instanceof Blob ? (response as any).error : undefined;
+
+        let _headers: any = {}; if (response.headers) { for (let key of response.headers.keys()) { _headers[key] = response.headers.get(key); }}
+        if (status === 200) {
+            return blobToText(responseBlob).pipe(_observableMergeMap((_responseText: string) => {
+            let result200: any = null;
+            result200 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver) as ProviderDto;
+            return _observableOf(result200);
+            }));
+        } else if (status !== 200 && status !== 204) {
+            return blobToText(responseBlob).pipe(_observableMergeMap((_responseText: string) => {
+            return throwException("An unexpected server error occurred.", status, _responseText, _headers);
+            }));
+        }
+        return _observableOf(null as any);
+    }
+
+    /**
+     * @param body (optional) 
+     * @return OK
+     */
+    providersPUT(id: string, body?: UpdateProviderDto | undefined): Observable<ProviderDto> {
+        let url_ = this.baseUrl + "/api/Providers/{id}";
+        if (id === undefined || id === null)
+            throw new globalThis.Error("The parameter 'id' must be defined.");
+        url_ = url_.replace("{id}", encodeURIComponent("" + id));
+        url_ = url_.replace(/[?&]$/, "");
+
+        const content_ = JSON.stringify(body);
+
+        let options_ : any = {
+            body: content_,
+            observe: "response",
+            responseType: "blob",
+            headers: new HttpHeaders({
+                "Content-Type": "application/json",
+                "Accept": "application/json"
+            })
+        };
+
+        return this.http.request("put", url_, options_).pipe(_observableMergeMap((response_ : any) => {
+            return this.processProvidersPUT(response_);
+        })).pipe(_observableCatch((response_: any) => {
+            if (response_ instanceof HttpResponseBase) {
+                try {
+                    return this.processProvidersPUT(response_ as any);
+                } catch (e) {
+                    return _observableThrow(e) as any as Observable<ProviderDto>;
+                }
+            } else
+                return _observableThrow(response_) as any as Observable<ProviderDto>;
+        }));
+    }
+
+    protected processProvidersPUT(response: HttpResponseBase): Observable<ProviderDto> {
+        const status = response.status;
+        const responseBlob =
+            response instanceof HttpResponse ? response.body :
+            (response as any).error instanceof Blob ? (response as any).error : undefined;
+
+        let _headers: any = {}; if (response.headers) { for (let key of response.headers.keys()) { _headers[key] = response.headers.get(key); }}
+        if (status === 200) {
+            return blobToText(responseBlob).pipe(_observableMergeMap((_responseText: string) => {
+            let result200: any = null;
+            result200 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver) as ProviderDto;
+            return _observableOf(result200);
+            }));
+        } else if (status !== 200 && status !== 204) {
+            return blobToText(responseBlob).pipe(_observableMergeMap((_responseText: string) => {
+            return throwException("An unexpected server error occurred.", status, _responseText, _headers);
+            }));
+        }
+        return _observableOf(null as any);
+    }
+
+    /**
+     * @return OK
+     */
+    providersDELETE(id: string): Observable<void> {
+        let url_ = this.baseUrl + "/api/Providers/{id}";
+        if (id === undefined || id === null)
+            throw new globalThis.Error("The parameter 'id' must be defined.");
+        url_ = url_.replace("{id}", encodeURIComponent("" + id));
+        url_ = url_.replace(/[?&]$/, "");
+
+        let options_ : any = {
+            observe: "response",
+            responseType: "blob",
+            headers: new HttpHeaders({
+            })
+        };
+
+        return this.http.request("delete", url_, options_).pipe(_observableMergeMap((response_ : any) => {
+            return this.processProvidersDELETE(response_);
+        })).pipe(_observableCatch((response_: any) => {
+            if (response_ instanceof HttpResponseBase) {
+                try {
+                    return this.processProvidersDELETE(response_ as any);
+                } catch (e) {
+                    return _observableThrow(e) as any as Observable<void>;
+                }
+            } else
+                return _observableThrow(response_) as any as Observable<void>;
+        }));
+    }
+
+    protected processProvidersDELETE(response: HttpResponseBase): Observable<void> {
+        const status = response.status;
+        const responseBlob =
+            response instanceof HttpResponse ? response.body :
+            (response as any).error instanceof Blob ? (response as any).error : undefined;
+
+        let _headers: any = {}; if (response.headers) { for (let key of response.headers.keys()) { _headers[key] = response.headers.get(key); }}
+        if (status === 200) {
+            return blobToText(responseBlob).pipe(_observableMergeMap((_responseText: string) => {
+            return _observableOf(null as any);
+            }));
+        } else if (status !== 200 && status !== 204) {
+            return blobToText(responseBlob).pipe(_observableMergeMap((_responseText: string) => {
+            return throwException("An unexpected server error occurred.", status, _responseText, _headers);
+            }));
+        }
+        return _observableOf(null as any);
+    }
+
+    /**
+     * @return OK
+     */
     transactionsGET(id: string): Observable<TransactionDto> {
         let url_ = this.baseUrl + "/api/Transactions/{id}";
         if (id === undefined || id === null)
@@ -1115,7 +1456,6 @@ export interface CategoryDto {
 }
 
 export interface CreateProductDto {
-    sku?: string | null;
     name?: string | null;
     description?: string | null;
     barcode?: string | null;
@@ -1133,6 +1473,20 @@ export interface CreateProductDto {
     location?: string | null;
     directSalesEnabled?: boolean;
     pointsEnabled?: boolean;
+}
+
+export interface CreateProviderDto {
+    name?: string | null;
+    code?: string | null;
+    phone?: string | null;
+    email?: string | null;
+    address?: string | null;
+    district?: string | null;
+    city?: string | null;
+    note?: string | null;
+    companyName?: string | null;
+    taxNumber?: string | null;
+    contactName?: string | null;
 }
 
 export interface CreateTransactionDto {
@@ -1177,6 +1531,31 @@ export interface ProductDto {
 
 export interface ProductDtoPaginatedResult {
     items?: ProductDto[] | null;
+    pageNumber?: number;
+    pageSize?: number;
+    totalCount?: number;
+    totalPages?: number;
+    hasPreviousPage?: boolean;
+    hasNextPage?: boolean;
+}
+
+export interface ProviderDto {
+    id?: string;
+    name?: string | null;
+    code?: string | null;
+    phone?: string | null;
+    email?: string | null;
+    address?: string | null;
+    district?: string | null;
+    city?: string | null;
+    note?: string | null;
+    companyName?: string | null;
+    taxNumber?: string | null;
+    contactName?: string | null;
+}
+
+export interface ProviderDtoPaginatedResult {
+    items?: ProviderDto[] | null;
     pageNumber?: number;
     pageSize?: number;
     totalCount?: number;
@@ -1234,6 +1613,20 @@ export interface UpdateProductDto {
     location?: string | null;
     directSalesEnabled?: boolean | null;
     pointsEnabled?: boolean | null;
+}
+
+export interface UpdateProviderDto {
+    name?: string | null;
+    code?: string | null;
+    phone?: string | null;
+    email?: string | null;
+    address?: string | null;
+    district?: string | null;
+    city?: string | null;
+    note?: string | null;
+    companyName?: string | null;
+    taxNumber?: string | null;
+    contactName?: string | null;
 }
 
 export interface FileParameter {

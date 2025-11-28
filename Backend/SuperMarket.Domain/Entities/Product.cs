@@ -44,10 +44,18 @@ public class Product : Entity
         UpdatedAt = DateTime.UtcNow;
     }
 
-    public Product(string name, string sku, Category category, decimal price, decimal costPrice)
+    public void SetSku(string sku)
+    {
+        if (string.IsNullOrWhiteSpace(sku))
+            throw new ArgumentException("SKU cannot be null or empty", nameof(sku));
+        
+        SKU = sku;
+        UpdatedAt = DateTime.UtcNow;
+    }
+
+    public Product(string name, Category category, decimal price, decimal costPrice)
     {
         Name = name;
-        SKU = sku;
         Category = category;
         CategoryId = category.Id;
         Price = price;

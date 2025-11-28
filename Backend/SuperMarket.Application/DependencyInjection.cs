@@ -1,4 +1,5 @@
 using Microsoft.Extensions.DependencyInjection;
+using SuperMarket.Application.Interfaces;
 using SuperMarket.Application.Services;
 using System.Reflection;
 
@@ -11,6 +12,7 @@ public static class DependencyInjection
         services.AddMediatR(cfg => cfg.RegisterServicesFromAssembly(Assembly.GetExecutingAssembly()));
 
         services.AddScoped<IProductService, ProductService>();
+        services.AddScoped<IProviderService, ProviderService>();
         
         return services;
     }

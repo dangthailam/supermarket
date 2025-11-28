@@ -7,6 +7,7 @@ import { InputText } from 'primeng/inputtext';
 import { Textarea } from 'primeng/textarea';
 import { Button } from 'primeng/button';
 import { Message } from 'primeng/message';
+import { SuperMarketApiClient } from '../../../core/api/api-client';
 
 @Component({
   selector: 'app-provider-form',
@@ -27,6 +28,10 @@ import { Message } from 'primeng/message';
             <h3>{{ isEditMode ? 'Cập nhật' : 'Thêm' }} nhà cung cấp</h3>
           </div>
         </ng-template>
+
+        @if (error) {
+          <p-message severity="error" [text]="error" styleClass="mb-3"></p-message>
+        }
 
         <form [formGroup]="providerForm" (ngSubmit)="onSubmit()">
           <div class="grid">
@@ -56,7 +61,7 @@ import { Message } from 'primeng/message';
             </div>
 
             <div class="col-12 md:col-6">
-              <label for="phone" class="block mb-2">Số điện thoại <span class="text-red-500">*</span></label>
+              <label for="phone" class="block mb-2">Số điện thoại</label>
               <input
                 pInputText
                 id="phone"
@@ -65,12 +70,9 @@ import { Message } from 'primeng/message';
                 [class.ng-invalid]="isFieldInvalid('phone')"
                 [class.ng-dirty]="providerForm.get('phone')?.touched"
               />
-              @if (isFieldInvalid('phone')) {
-                <small class="text-red-500">Vui lòng nhập số điện thoại</small>
-              }
             </div>
 
-            <div class="col-12">
+            <div class="col-12 md:col-6">
               <label for="email" class="block mb-2">Email</label>
               <input
                 pInputText
@@ -81,12 +83,74 @@ import { Message } from 'primeng/message';
               />
             </div>
 
-            <div class="col-12">
+            <div class="col-12 md:col-6">
+              <label for="code" class="block mb-2">Mã nhà cung cấp</label>
+              <input
+                pInputText
+                id="code"
+                formControlName="code"
+                class="w-full"
+                readonly
+              />
+              <small class="form-hint">Auto-generated</small>
+            </div>
+
+            <div class="col-12 md:col-6">
+              <label for="companyName" class="block mb-2">Tên công ty</label>
+              <input
+                pInputText
+                id="companyName"
+                formControlName="companyName"
+                class="w-full"
+              />
+            </div>
+
+            <div class="col-12 md:col-6">
+              <label for="taxNumber" class="block mb-2">Mã số thuế</label>
+              <input
+                pInputText
+                id="taxNumber"
+                formControlName="taxNumber"
+                class="w-full"
+              />
+            </div>
+
+            <div class="col-12 md:col-6">
               <label for="address" class="block mb-2">Địa chỉ</label>
-              <textarea
-                pTextarea
+              <input
+                pInputText
                 id="address"
                 formControlName="address"
+                class="w-full"
+              />
+            </div>
+
+            <div class="col-12 md:col-6">
+              <label for="district" class="block mb-2">Quận/Huyện</label>
+              <input
+                pInputText
+                id="district"
+                formControlName="district"
+                class="w-full"
+              />
+            </div>
+
+            <div class="col-12 md:col-6">
+              <label for="city" class="block mb-2">Thành phố/Tỉnh</label>
+              <input
+                pInputText
+                id="city"
+                formControlName="city"
+                class="w-full"
+              />
+            </div>
+
+            <div class="col-12">
+              <label for="note" class="block mb-2">Ghi chú</label>
+              <textarea
+                pTextarea
+                id="note"
+                formControlName="note"
                 rows="3"
                 class="w-full"
               ></textarea>
@@ -117,20 +181,28 @@ import { Message } from 'primeng/message';
 export class ProviderFormComponent implements OnInit {
   providerForm: FormGroup;
   isEditMode = false;
-  providerId?: number;
+  providerId?: string;
   saving = false;
+  error: string | null = null;
 
   constructor(
     private fb: FormBuilder,
     private route: ActivatedRoute,
-    private router: Router
+    private router: Router,
+    private providerService: SuperMarketApiClient
   ) {
     this.providerForm = this.fb.group({
-      name: ['', Validators.required],
-      contactName: [''],
-      phone: ['', Validators.required],
-      email: ['', Validators.email],
-      address: ['']
+      name: [null, Validators.required],
+      code: [null],
+      contactName: [null],
+      phone: [null],
+      email: [null, [Validators.email]],
+      address: [null],
+      district: [null],
+      city: [null],
+      note: [null],
+      companyName: [null],
+      taxNumber: [null]
     });
   }
 
@@ -138,22 +210,38 @@ export class ProviderFormComponent implements OnInit {
     const id = this.route.snapshot.params['id'];
     if (id && id !== 'new') {
       this.isEditMode = true;
-      this.providerId = +id;
-      this.loadProvider(this.providerId);
+      this.providerId = id;
+      this.loadProvider(this.providerId!);
+    } else {
+      // Set code as readonly and auto-generated
+      this.providerForm.get('code')?.disable();
     }
   }
 
-  loadProvider(id: number) {
-    // Mock data - replace with actual API call
-    setTimeout(() => {
-      this.providerForm.patchValue({
-        name: 'Công ty TNHH ABC',
-        contactName: 'Nguyễn Văn A',
-        phone: '0123456789',
-        email: 'abc@example.com',
-        address: 'Hà Nội'
-      });
-    }, 300);
+  loadProvider(id: string) {
+    this.saving = true;
+    this.providerService.providersGET(id).subscribe({
+      next: (provider) => {
+        this.providerForm.patchValue({
+          name: provider.name,
+          code: provider.code,
+          contactName: provider.contactName,
+          phone: provider.phone,
+          email: provider.email,
+          address: provider.address,
+          district: provider.district,
+          city: provider.city,
+          note: provider.note,
+          companyName: provider.companyName,
+          taxNumber: provider.taxNumber
+        });
+        this.saving = false;
+      },
+      error: (err) => {
+        this.error = 'Không thể tải dữ liệu nhà cung cấp';
+        this.saving = false;
+      }
+    });
   }
 
   isFieldInvalid(fieldName: string): boolean {
@@ -164,11 +252,33 @@ export class ProviderFormComponent implements OnInit {
   onSubmit() {
     if (this.providerForm.valid) {
       this.saving = true;
-      // Save provider - replace with actual API call
-      setTimeout(() => {
-        this.saving = false;
-        this.router.navigate(['/providers']);
-      }, 500);
+      this.error = null;
+
+      const formValue = this.providerForm.getRawValue();
+      
+      if (this.isEditMode && this.providerId) {
+        this.providerService.providersPUT(this.providerId, formValue).subscribe({
+          next: () => {
+            this.saving = false;
+            this.router.navigate(['/providers']);
+          },
+          error: (err) => {
+            this.error = 'Cập nhật nhà cung cấp thất bại';
+            this.saving = false;
+          }
+        });
+      } else {
+        this.providerService.providersPOST(formValue).subscribe({
+          next: () => {
+            this.saving = false;
+            this.router.navigate(['/providers']);
+          },
+          error: (err) => {
+            this.error = 'Tạo nhà cung cấp thất bại';
+            this.saving = false;
+          }
+        });
+      }
     }
   }
 

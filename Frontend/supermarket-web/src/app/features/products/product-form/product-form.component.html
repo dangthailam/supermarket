@@ -20,19 +20,16 @@
     <div class="form-grid">
       <!-- SKU -->
       <div class="field">
-        <label for="sku">SKU <span class="required">*</span></label>
+        <label for="sku">SKU</label>
         <input
           id="sku"
           type="text"
           pInputText
           formControlName="sku"
-          [class.ng-invalid]="isFieldInvalid('sku')"
-          [class.ng-dirty]="isFieldInvalid('sku')"
+          readonly
           class="w-full"
         />
-        @if (isFieldInvalid('sku')) {
-          <small class="p-error">{{ getErrorMessage('sku') }}</small>
-        }
+        <small class="form-hint">Auto-generated</small>
       </div>
 
       <!-- Name -->

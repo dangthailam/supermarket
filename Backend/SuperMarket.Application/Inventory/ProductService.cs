@@ -22,10 +22,12 @@ public interface IProductService
 public class ProductService : IProductService
 {
     private readonly IUnitOfWork _unitOfWork;
+    private readonly ISkuGeneratorService _skuGenerator;
 
-    public ProductService(IUnitOfWork unitOfWork)
+    public ProductService(IUnitOfWork unitOfWork, ISkuGeneratorService skuGenerator)
     {
         _unitOfWork = unitOfWork;
+        _skuGenerator = skuGenerator;
     }
 
     public async Task<IEnumerable<ProductDto>> GetAllProductsAsync()
@@ -143,8 +145,14 @@ public class ProductService : IProductService
         if (category == null)
             throw new ArgumentException($"Category with ID {dto.CategoryId} not found.");
 
-        // Create product using constructor
-        var product = new Product(dto.Name, dto.SKU, category, dto.Price, dto.CostPrice);
+        // Generate unique SKU
+        var generatedSku = await _skuGenerator.GenerateSkuAsync(dto.CategoryId, dto.Name);
+
+        // Create product using constructor (without SKU)
+        var product = new Product(dto.Name, category, dto.Price, dto.CostPrice);
+        
+        // Set the generated SKU
+        product.SetSku(generatedSku);
 
         var brand = await _unitOfWork.Brands.FirstOrDefaultAsync(b => b.Id == dto.BrandId);
 

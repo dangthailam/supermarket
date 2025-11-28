@@ -2,28 +2,30 @@ import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
 import { FormsModule } from '@angular/forms';
-import { SuperMarketApiClient, ProductDto, ProductDtoPaginatedResult } from '../../../core/api/api-client';
+import { SuperMarketApiClient, ProductDto, ProductDtoPaginatedResult, CategoryDto } from '../../../core/api/api-client';
 import { ConfirmDialog } from 'primeng/confirmdialog';
 import { TableModule } from 'primeng/table';
 import { TooltipModule } from 'primeng/tooltip';
 import { ConfirmationService, MessageService } from 'primeng/api';
 import { ButtonModule } from 'primeng/button';
-import { SelectModule } from 'primeng/select';
 import { ToastModule } from 'primeng/toast';
 import { CheckboxModule } from 'primeng/checkbox';
+import { DialogModule } from 'primeng/dialog';
+import { InputTextModule } from 'primeng/inputtext';
 
 @Component({
     selector: 'app-product-list',
     imports: [
         CommonModule,
         FormsModule,
-        SelectModule,
         ConfirmDialog,
         TableModule,
         TooltipModule,
         ButtonModule,
         ToastModule,
-        CheckboxModule
+        CheckboxModule,
+        DialogModule,
+        InputTextModule
     ],
     providers: [ConfirmationService, MessageService],
     templateUrl: './product-list.component.html',
@@ -33,9 +35,13 @@ export class ProductListComponent implements OnInit {
   products: ProductDto[] = [];
   loading = false;
   searchTerm = '';
-  categories: any[] = [];
+  categories: CategoryDto[] = [];
   stockFilter: string = 'all';
   timeFilter: string = 'all';
+  
+  // Category dialog
+  showCategoryDialog = false;
+  newCategoryName = '';
 
   // Pagination properties
   totalRecords = 0;
@@ -53,6 +59,66 @@ export class ProductListComponent implements OnInit {
 
   ngOnInit(): void {
     this.loadProducts();
+  }
+
+  manageCategories(): void {
+    this.showCategoryDialog = true;
+    this.newCategoryName = '';
+    // Load categories when dialog opens
+    this.loadCategoriesForDialog();
+  }
+
+  loadCategoriesForDialog(): void {
+    // Mock data for now - replace with actual API call when available
+    this.categories = [];
+  }
+
+  createCategory(): void {
+    if (!this.newCategoryName.trim()) {
+      return;
+    }
+
+    // Mock creation - replace with actual API call when available
+    const newCategory: CategoryDto = {
+      name: this.newCategoryName.trim(),
+      description: ''
+    } as CategoryDto;
+
+    this.categories.push(newCategory);
+    this.newCategoryName = '';
+    this.messageService.add({
+      severity: 'success',
+      summary: 'Thành công',
+      detail: 'Đã thêm danh mục mới'
+    });
+  }
+
+  editCategory(category: CategoryDto): void {
+    const newName = prompt('Nhập tên mới cho danh mục:', category.name || '');
+    if (newName && newName.trim() && newName !== category.name) {
+      category.name = newName.trim();
+      this.messageService.add({
+        severity: 'success',
+        summary: 'Thành công',
+        detail: 'Đã cập nhật danh mục'
+      });
+    }
+  }
+
+  deleteCategory(category: CategoryDto): void {
+    this.confirmationService.confirm({
+      message: `Bạn có chắc chắn muốn xóa danh mục "${category.name}"?`,
+      header: 'Xác nhận xóa',
+      icon: 'pi pi-exclamation-triangle',
+      accept: () => {
+        this.categories = this.categories.filter(c => c.id !== category.id);
+        this.messageService.add({
+          severity: 'success',
+          summary: 'Thành công',
+          detail: 'Đã xóa danh mục'
+        });
+      }
+    });
   }
 
   loadProducts(): void {

@@ -1,39 +1,32 @@
 <p-toast></p-toast>
 <p-confirmDialog></p-confirmDialog>
 
-<div class="products-container">
-
-  <!-- Main Content Area -->
-  <div class="main-area">
-    <!-- Toolbar -->
-    <div class="toolbar">
-      <div class="toolbar-right">
-        <p-button label="Tạo mới" severity="primary" icon="pi pi-plus" (onClick)="addProduct()"></p-button>
-        <!-- <button class="btn-action">
-          <i class="pi pi-upload"></i>
-          Import file
-        </button>
-        <button class="btn-action">
-          <i class="pi pi-download"></i>
-          Xuất file
-        </button>
-        <button class="btn-icon">
-          <i class="pi pi-th-large"></i>
-        </button>
-        <button class="btn-icon">
-          <i class="pi pi-cog"></i>
-        </button>
-        <button class="btn-icon">
-          <i class="pi pi-question-circle"></i>
-        </button> -->
-      </div>
+<div class="p-3">
+  <!-- Header -->
+  <div class="flex justify-content-between align-items-center mb-3 flex-wrap gap-2">
+    <h2 class="m-0">Sản phẩm</h2>
+    <div class="flex gap-2">
+      <p-button 
+        label="Danh mục" 
+        icon="pi pi-tags" 
+        severity="secondary" 
+        (onClick)="manageCategories()"
+        size="small"
+      ></p-button>
+      <p-button 
+        label="Thêm sản phẩm" 
+        icon="pi pi-plus" 
+        (onClick)="addProduct()"
+        size="small"
+      ></p-button>
     </div>
+  </div>
 
-    <!-- Products Table -->
-    <div class="p-2 overflow-auto">
-      <p-table
-        [value]="products"
-        [loading]="loading"
+  <!-- Products Table -->
+  <div class="overflow-auto">
+    <p-table
+      [value]="products"
+      [loading]="loading"
         [paginator]="true"
         [rows]="pageSize"
         [totalRecords]="totalRecords"
@@ -178,5 +171,67 @@
         </ng-template>
       </p-table>
     </div>
-  </div>
 </div>
+
+<p-dialog 
+  [(visible)]="showCategoryDialog" 
+  [header]="'Quản lý danh mục'" 
+  [modal]="true"
+  [style]="{width: '90vw', maxWidth: '600px'}"
+  [draggable]="false"
+  [resizable]="false"
+>
+  <div class="mb-3">
+    <div class="flex gap-2">
+      <input 
+        pInputText 
+        [(ngModel)]="newCategoryName" 
+        placeholder="Tên danh mục mới"
+        class="flex-1"
+        (keyup.enter)="createCategory()"
+      />
+      <p-button 
+        label="Thêm" 
+        icon="pi pi-plus" 
+        (onClick)="createCategory()"
+        [disabled]="!newCategoryName"
+      ></p-button>
+    </div>
+  </div>
+
+  <p-table [value]="categories" [paginator]="true" [rows]="5">
+    <ng-template pTemplate="header">
+      <tr>
+        <th>Tên danh mục</th>
+        <th style="width: 100px">Thao tác</th>
+      </tr>
+    </ng-template>
+    <ng-template pTemplate="body" let-category>
+      <tr>
+        <td>{{ category.name }}</td>
+        <td>
+          <div class="flex gap-1">
+            <p-button 
+              icon="pi pi-pencil" 
+              [text]="true"
+              size="small"
+              (onClick)="editCategory(category)"
+            ></p-button>
+            <p-button 
+              icon="pi pi-trash" 
+              severity="danger"
+              [text]="true"
+              size="small"
+              (onClick)="deleteCategory(category)"
+            ></p-button>
+          </div>
+        </td>
+      </tr>
+    </ng-template>
+    <ng-template pTemplate="emptymessage">
+      <tr>
+        <td colspan="2" class="text-center">Chưa có danh mục nào</td>
+      </tr>
+    </ng-template>
+  </p-table>
+</p-dialog>

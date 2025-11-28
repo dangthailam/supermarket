@@ -1,85 +1,49 @@
-<div class="kiotviet-layout">
-  <!-- Top Header -->
-  <header class="top-header">
-    <div class="header-left">
-      <div class="logo">
-        <i class="pi pi-shopping-cart"></i>
-        <span>KiotViet</span>
-      </div>
-    </div>
-    <div class="header-right">
-      <button class="header-btn">
-        <i class="pi pi-question-circle"></i>
-        <span>Giao hàng</span>
-      </button>
-      <button class="header-btn">
-        <i class="pi pi-book"></i>
-        <span>Chủ đề</span>
-      </button>
-      <button class="header-btn">
-        <i class="pi pi-question-circle"></i>
-        <span>Hỗ trợ</span>
-      </button>
-      <button class="header-btn">
-        <i class="pi pi-comments"></i>
-        <span>Góp ý</span>
-      </button>
-      <button class="header-btn lang-btn">
-        <img src="assets/vietnam-flag.png" alt="VN" class="flag-icon" />
-        <span>Tiếng Việt</span>
-      </button>
-      <button class="header-btn notification-btn">
-        <i class="pi pi-bell"></i>
-      </button>
-      <button class="header-btn settings-btn">
-        <i class="pi pi-cog"></i>
-      </button>
-      <button class="header-btn user-btn">
-        <i class="pi pi-user"></i>
-      </button>
-    </div>
-  </header>
-
-  <!-- Navigation Menu -->
-  <nav class="main-nav">
-    <a routerLink="/dashboard" routerLinkActive="active" class="nav-item">
-      Tổng quan
-    </a>
-    <a routerLink="/products" routerLinkActive="active" class="nav-item">
-      Hàng hóa
-    </a>
-    <a routerLink="/orders" routerLinkActive="active" class="nav-item">
-      Đơn hàng
-    </a>
-    <a routerLink="/customers" routerLinkActive="active" class="nav-item">
-      Khách hàng
-    </a>
-    <a routerLink="/employees" routerLinkActive="active" class="nav-item">
-      Nhân viên
-    </a>
-    <a routerLink="/reports" routerLinkActive="active" class="nav-item">
-      Sổ quỹ
-    </a>
-    <a routerLink="/discounts" routerLinkActive="active" class="nav-item">
-      Phần tích
-    </a>
-    <a routerLink="/online" routerLinkActive="active" class="nav-item">
-      Bán online
-    </a>
-    <a routerLink="/accounting" routerLinkActive="active" class="nav-item">
-      Thuế & Kế toán
-      <span class="new-badge">MỚI</span>
-    </a>
-    <div class="nav-right">
-      <button class="btn-sell">
-        <i class="pi pi-shopping-bag"></i>
-        Bán hàng
-      </button>
-    </div>
-  </nav>
-
+<div class="mobile-layout">
   <!-- Main Content -->
-  <main class="main-content">
+  <main class="main-content pb-7">
     <router-outlet></router-outlet>
   </main>
+
+  <!-- Bottom Navigation Bar -->
+  <nav class="bottom-nav">
+    <a 
+      routerLink="/dashboard" 
+      routerLinkActive="active"
+      class="nav-item"
+      [routerLinkActiveOptions]="{exact: false}"
+    >
+      <i class="pi pi-home"></i>
+      <span>Dashboard</span>
+    </a>
+    
+    <a 
+      routerLink="/products" 
+      routerLinkActive="active"
+      class="nav-item"
+      [routerLinkActiveOptions]="{exact: false}"
+    >
+      <i class="pi pi-box"></i>
+      <span>Sản phẩm</span>
+    </a>
+    
+    <a 
+      routerLink="/providers" 
+      routerLinkActive="active"
+      class="nav-item"
+      [routerLinkActiveOptions]="{exact: false}"
+    >
+      <i class="pi pi-truck"></i>
+      <span>Nhà cung cấp</span>
+    </a>
+    
+    <a 
+      routerLink="/more" 
+      routerLinkActive="active"
+      class="nav-item"
+      [routerLinkActiveOptions]="{exact: false}"
+    >
+      <i class="pi pi-ellipsis-h"></i>
+      <span>Thêm</span>
+    </a>
+  </nav>
 </div>

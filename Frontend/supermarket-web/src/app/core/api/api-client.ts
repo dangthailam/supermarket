@@ -80,7 +80,7 @@ export class SuperMarketApiClient {
     /**
      * @return OK
      */
-    categories(id: number): Observable<CategoryDto> {
+    categories(id: string): Observable<CategoryDto> {
         let url_ = this.baseUrl + "/api/Categories/{id}";
         if (id === undefined || id === null)
             throw new globalThis.Error("The parameter 'id' must be defined.");
@@ -121,6 +121,108 @@ export class SuperMarketApiClient {
             let result200: any = null;
             result200 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver) as CategoryDto;
             return _observableOf(result200);
+            }));
+        } else if (status !== 200 && status !== 204) {
+            return blobToText(responseBlob).pipe(_observableMergeMap((_responseText: string) => {
+            return throwException("An unexpected server error occurred.", status, _responseText, _headers);
+            }));
+        }
+        return _observableOf(null as any);
+    }
+
+    /**
+     * @return OK
+     */
+    excel(): Observable<void> {
+        let url_ = this.baseUrl + "/api/Import/products/excel";
+        url_ = url_.replace(/[?&]$/, "");
+
+        let options_ : any = {
+            observe: "response",
+            responseType: "blob",
+            headers: new HttpHeaders({
+            })
+        };
+
+        return this.http.request("post", url_, options_).pipe(_observableMergeMap((response_ : any) => {
+            return this.processExcel(response_);
+        })).pipe(_observableCatch((response_: any) => {
+            if (response_ instanceof HttpResponseBase) {
+                try {
+                    return this.processExcel(response_ as any);
+                } catch (e) {
+                    return _observableThrow(e) as any as Observable<void>;
+                }
+            } else
+                return _observableThrow(response_) as any as Observable<void>;
+        }));
+    }
+
+    protected processExcel(response: HttpResponseBase): Observable<void> {
+        const status = response.status;
+        const responseBlob =
+            response instanceof HttpResponse ? response.body :
+            (response as any).error instanceof Blob ? (response as any).error : undefined;
+
+        let _headers: any = {}; if (response.headers) { for (let key of response.headers.keys()) { _headers[key] = response.headers.get(key); }}
+        if (status === 200) {
+            return blobToText(responseBlob).pipe(_observableMergeMap((_responseText: string) => {
+            return _observableOf(null as any);
+            }));
+        } else if (status !== 200 && status !== 204) {
+            return blobToText(responseBlob).pipe(_observableMergeMap((_responseText: string) => {
+            return throwException("An unexpected server error occurred.", status, _responseText, _headers);
+            }));
+        }
+        return _observableOf(null as any);
+    }
+
+    /**
+     * @param file (optional) 
+     * @return OK
+     */
+    upload(file?: FileParameter | undefined): Observable<void> {
+        let url_ = this.baseUrl + "/api/Import/products/excel/upload";
+        url_ = url_.replace(/[?&]$/, "");
+
+        const content_ = new FormData();
+        if (file === null || file === undefined)
+            throw new globalThis.Error("The parameter 'file' cannot be null.");
+        else
+            content_.append("file", file.data, file.fileName ? file.fileName : "file");
+
+        let options_ : any = {
+            body: content_,
+            observe: "response",
+            responseType: "blob",
+            headers: new HttpHeaders({
+            })
+        };
+
+        return this.http.request("post", url_, options_).pipe(_observableMergeMap((response_ : any) => {
+            return this.processUpload(response_);
+        })).pipe(_observableCatch((response_: any) => {
+            if (response_ instanceof HttpResponseBase) {
+                try {
+                    return this.processUpload(response_ as any);
+                } catch (e) {
+                    return _observableThrow(e) as any as Observable<void>;
+                }
+            } else
+                return _observableThrow(response_) as any as Observable<void>;
+        }));
+    }
+
+    protected processUpload(response: HttpResponseBase): Observable<void> {
+        const status = response.status;
+        const responseBlob =
+            response instanceof HttpResponse ? response.body :
+            (response as any).error instanceof Blob ? (response as any).error : undefined;
+
+        let _headers: any = {}; if (response.headers) { for (let key of response.headers.keys()) { _headers[key] = response.headers.get(key); }}
+        if (status === 200) {
+            return blobToText(responseBlob).pipe(_observableMergeMap((_responseText: string) => {
+            return _observableOf(null as any);
             }));
         } else if (status !== 200 && status !== 204) {
             return blobToText(responseBlob).pipe(_observableMergeMap((_responseText: string) => {
@@ -313,7 +415,7 @@ export class SuperMarketApiClient {
     /**
      * @return OK
      */
-    productsGET(id: number): Observable<ProductDto> {
+    productsGET(id: string): Observable<ProductDto> {
         let url_ = this.baseUrl + "/api/Products/{id}";
         if (id === undefined || id === null)
             throw new globalThis.Error("The parameter 'id' must be defined.");
@@ -367,7 +469,7 @@ export class SuperMarketApiClient {
      * @param body (optional) 
      * @return OK
      */
-    productsPUT(id: number, body?: UpdateProductDto | undefined): Observable<ProductDto> {
+    productsPUT(id: string, body?: UpdateProductDto | undefined): Observable<ProductDto> {
         let url_ = this.baseUrl + "/api/Products/{id}";
         if (id === undefined || id === null)
             throw new globalThis.Error("The parameter 'id' must be defined.");
@@ -424,7 +526,7 @@ export class SuperMarketApiClient {
     /**
      * @return OK
      */
-    productsDELETE(id: number): Observable<void> {
+    productsDELETE(id: string): Observable<void> {
         let url_ = this.baseUrl + "/api/Products/{id}";
         if (id === undefined || id === null)
             throw new globalThis.Error("The parameter 'id' must be defined.");
@@ -527,7 +629,7 @@ export class SuperMarketApiClient {
     /**
      * @return OK
      */
-    category(categoryId: number): Observable<ProductDto[]> {
+    category(categoryId: string): Observable<ProductDto[]> {
         let url_ = this.baseUrl + "/api/Products/category/{categoryId}";
         if (categoryId === undefined || categoryId === null)
             throw new globalThis.Error("The parameter 'categoryId' must be defined.");
@@ -628,13 +730,15 @@ export class SuperMarketApiClient {
     }
 
     /**
+     * @param searchTerm (optional) 
      * @return OK
      */
-    search(searchTerm: string): Observable<ProductDto[]> {
-        let url_ = this.baseUrl + "/api/Products/search/{searchTerm}";
-        if (searchTerm === undefined || searchTerm === null)
-            throw new globalThis.Error("The parameter 'searchTerm' must be defined.");
-        url_ = url_.replace("{searchTerm}", encodeURIComponent("" + searchTerm));
+    search(searchTerm?: string | undefined): Observable<ProductDto[]> {
+        let url_ = this.baseUrl + "/api/Products/search?";
+        if (searchTerm === null)
+            throw new globalThis.Error("The parameter 'searchTerm' cannot be null.");
+        else if (searchTerm !== undefined)
+            url_ += "searchTerm=" + encodeURIComponent("" + searchTerm) + "&";
         url_ = url_.replace(/[?&]$/, "");
 
         let options_ : any = {
@@ -681,64 +785,9 @@ export class SuperMarketApiClient {
     }
 
     /**
-     * @param file (optional) 
      * @return OK
      */
-    importExcel(file?: FileParameter | undefined): Observable<void> {
-        let url_ = this.baseUrl + "/api/Products/import-excel";
-        url_ = url_.replace(/[?&]$/, "");
-
-        const content_ = new FormData();
-        if (file === null || file === undefined)
-            throw new globalThis.Error("The parameter 'file' cannot be null.");
-        else
-            content_.append("file", file.data, file.fileName ? file.fileName : "file");
-
-        let options_ : any = {
-            body: content_,
-            observe: "response",
-            responseType: "blob",
-            headers: new HttpHeaders({
-            })
-        };
-
-        return this.http.request("post", url_, options_).pipe(_observableMergeMap((response_ : any) => {
-            return this.processImportExcel(response_);
-        })).pipe(_observableCatch((response_: any) => {
-            if (response_ instanceof HttpResponseBase) {
-                try {
-                    return this.processImportExcel(response_ as any);
-                } catch (e) {
-                    return _observableThrow(e) as any as Observable<void>;
-                }
-            } else
-                return _observableThrow(response_) as any as Observable<void>;
-        }));
-    }
-
-    protected processImportExcel(response: HttpResponseBase): Observable<void> {
-        const status = response.status;
-        const responseBlob =
-            response instanceof HttpResponse ? response.body :
-            (response as any).error instanceof Blob ? (response as any).error : undefined;
-
-        let _headers: any = {}; if (response.headers) { for (let key of response.headers.keys()) { _headers[key] = response.headers.get(key); }}
-        if (status === 200) {
-            return blobToText(responseBlob).pipe(_observableMergeMap((_responseText: string) => {
-            return _observableOf(null as any);
-            }));
-        } else if (status !== 200 && status !== 204) {
-            return blobToText(responseBlob).pipe(_observableMergeMap((_responseText: string) => {
-            return throwException("An unexpected server error occurred.", status, _responseText, _headers);
-            }));
-        }
-        return _observableOf(null as any);
-    }
-
-    /**
-     * @return OK
-     */
-    transactionsGET(id: number): Observable<TransactionDto> {
+    transactionsGET(id: string): Observable<TransactionDto> {
         let url_ = this.baseUrl + "/api/Transactions/{id}";
         if (id === undefined || id === null)
             throw new globalThis.Error("The parameter 'id' must be defined.");
@@ -1006,7 +1055,7 @@ export class SuperMarketApiClient {
     /**
      * @return OK
      */
-    cancel(id: number): Observable<void> {
+    cancel(id: string): Observable<void> {
         let url_ = this.baseUrl + "/api/Transactions/{id}/cancel";
         if (id === undefined || id === null)
             throw new globalThis.Error("The parameter 'id' must be defined.");
@@ -1055,12 +1104,12 @@ export class SuperMarketApiClient {
 }
 
 export interface CategoryDto {
-    id?: number;
+    id?: string;
     name?: string | null;
     description?: string | null;
     isActive?: boolean;
     productCount?: number;
-    parentCategoryId?: number | null;
+    parentCategoryId?: string | null;
     parentCategoryName?: string | null;
     subCategories?: CategoryDto[] | null;
 }
@@ -1075,10 +1124,10 @@ export interface CreateProductDto {
     stockQuantity?: number;
     minStockLevel?: number;
     maxStockLevel?: number | null;
-    categoryId?: number;
+    categoryId?: string;
     imageUrl?: string | null;
     productType?: string | null;
-    brand?: string | null;
+    brandId?: string | null;
     unit?: string | null;
     weight?: number | null;
     location?: string | null;
@@ -1095,13 +1144,13 @@ export interface CreateTransactionDto {
 }
 
 export interface CreateTransactionItemDto {
-    productId?: number;
+    productId?: string;
     quantity?: number;
     discount?: number;
 }
 
 export interface ProductDto {
-    id?: number;
+    id?: string;
     sku?: string | null;
     name?: string | null;
     description?: string | null;
@@ -1111,12 +1160,13 @@ export interface ProductDto {
     stockQuantity?: number;
     minStockLevel?: number;
     maxStockLevel?: number | null;
-    categoryId?: number;
+    categoryId?: string;
     categoryName?: string | null;
     imageUrl?: string | null;
     isActive?: boolean;
     productType?: string | null;
-    brand?: string | null;
+    brandName?: string | null;
+    brandId?: string | null;
     unit?: string | null;
     weight?: number | null;
     location?: string | null;
@@ -1136,7 +1186,7 @@ export interface ProductDtoPaginatedResult {
 }
 
 export interface TransactionDto {
-    id?: number;
+    id?: string;
     transactionNumber?: string | null;
     transactionDate?: Date;
     totalAmount?: number;
@@ -1151,7 +1201,7 @@ export interface TransactionDto {
 }
 
 export interface TransactionItemDto {
-    productId?: number;
+    productId?: string;
     productName?: string | null;
     quantity?: number;
     unitPrice?: number;
@@ -1174,11 +1224,11 @@ export interface UpdateProductDto {
     costPrice?: number | null;
     minStockLevel?: number | null;
     maxStockLevel?: number | null;
-    categoryId?: number | null;
+    categoryId?: string | null;
     imageUrl?: string | null;
     isActive?: boolean | null;
     productType?: string | null;
-    brand?: string | null;
+    brandId?: string | null;
     unit?: string | null;
     weight?: number | null;
     location?: string | null;

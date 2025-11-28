@@ -1,9 +1,125 @@
-.kiotviet-layout {
+// Mobile-first layout with bottom navigation
+.mobile-layout {
   display: flex;
   flex-direction: column;
-  height: 100vh;
-  overflow: hidden;
+  min-height: 100vh;
   background: #f5f5f5;
+}
+
+// Main Content Area
+.main-content {
+  flex: 1;
+  overflow-y: auto;
+  overflow-x: hidden;
+  -webkit-overflow-scrolling: touch;
+  
+  // Add padding at bottom to prevent content being hidden behind bottom nav
+  &.pb-7 {
+    padding-bottom: 70px;
+  }
+}
+
+// Bottom Navigation Bar
+.bottom-nav {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  display: flex;
+  justify-content: space-around;
+  align-items: center;
+  background: white;
+  border-top: 1px solid #e0e0e0;
+  padding: 8px 0;
+  z-index: 1000;
+  box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.05);
+  
+  .nav-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 4px;
+    flex: 1;
+    padding: 6px 4px;
+    color: #666;
+    text-decoration: none;
+    font-size: 11px;
+    font-weight: 500;
+    transition: all 0.2s;
+    border-radius: 8px;
+    margin: 0 4px;
+    
+    i {
+      font-size: 20px;
+      transition: transform 0.2s;
+    }
+    
+    span {
+      margin-top: 2px;
+      white-space: nowrap;
+    }
+    
+    &:hover {
+      background: #f5f5f5;
+      
+      i {
+        transform: scale(1.1);
+      }
+    }
+    
+    &.active {
+      color: #4b7cf3;
+      font-weight: 600;
+      
+      i {
+        color: #4b7cf3;
+        transform: scale(1.1);
+      }
+    }
+  }
+}
+
+// Responsive adjustments for larger screens
+@media (min-width: 768px) {
+  .bottom-nav {
+    .nav-item {
+      font-size: 12px;
+      padding: 8px 12px;
+      
+      i {
+        font-size: 22px;
+      }
+    }
+  }
+}
+
+@media (min-width: 1024px) {
+  .mobile-layout {
+    max-width: 1200px;
+    margin: 0 auto;
+  }
+  
+  .bottom-nav {
+    left: 50%;
+    transform: translateX(-50%);
+    max-width: 1200px;
+    border-left: 1px solid #e0e0e0;
+    border-right: 1px solid #e0e0e0;
+  }
+}
+
+// Ensure safe area for devices with notch
+@supports (padding: max(0px)) {
+  .bottom-nav {
+    padding-bottom: max(8px, env(safe-area-inset-bottom));
+  }
+  
+  .main-content {
+    &.pb-7 {
+      padding-bottom: calc(70px + max(0px, env(safe-area-inset-bottom)));
+    }
+  }
 }
 
 // Top Header

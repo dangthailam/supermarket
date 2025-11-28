@@ -34,7 +34,7 @@ import { ProgressSpinner } from 'primeng/progressspinner';
 export class ProductFormComponent implements OnInit {
   productForm!: FormGroup;
   isEditMode = false;
-  productId?: number;
+  productId?: string;
   loading = false;
   error = '';
   categories: CategoryDto[] = [];
@@ -49,7 +49,7 @@ export class ProductFormComponent implements OnInit {
   }
 
   ngOnInit(): void {
-    this.productId = Number(this.route.snapshot.paramMap.get('id'));
+    this.productId = this.route.snapshot.paramMap.get('id')!;
     this.isEditMode = !!this.productId;
 
     this.loadCategories();

@@ -10,6 +10,7 @@ public class SuperMarketDbContext : DbContext
     {
     }
 
+    public DbSet<Brand> Brands { get; set; }
     public DbSet<Category> Categories { get; set; }
     public DbSet<Product> Products { get; set; }
     public DbSet<Transaction> Transactions { get; set; }
@@ -48,7 +49,6 @@ public class SuperMarketDbContext : DbContext
             entity.Property(e => e.CostPrice).HasColumnType("decimal(18,2)");
             entity.Property(e => e.Weight).HasColumnType("decimal(18,3)");
             entity.Property(e => e.ProductType).HasMaxLength(100);
-            entity.Property(e => e.Brand).HasMaxLength(200);
             entity.Property(e => e.Unit).HasMaxLength(50);
             entity.Property(e => e.Location).HasMaxLength(100);
 
@@ -61,6 +61,11 @@ public class SuperMarketDbContext : DbContext
                 .WithMany(c => c.Products)
                 .HasForeignKey(e => e.CategoryId)
                 .OnDelete(DeleteBehavior.Restrict);
+
+            entity.HasOne(e => e.Brand)
+                .WithMany(b => b.Products)
+                .HasForeignKey(e => e.BrandId)
+                .OnDelete(DeleteBehavior.SetNull);
         });
 
         // Transaction configuration

@@ -19,7 +19,8 @@ public class ProductDto
 
     // New fields from Excel import
     public string? ProductType { get; set; }
-    public string? Brand { get; set; }
+    public string? BrandName { get; set; }
+    public Guid? BrandId { get; set; }
     public string? Unit { get; set; }
     public decimal? Weight { get; set; }
     public string? Location { get; set; }
@@ -45,7 +46,7 @@ public class CreateProductDto
 
     // New fields from Excel import
     public string? ProductType { get; set; }
-    public string? Brand { get; set; }
+    public Guid? BrandId { get; set; }
     public string? Unit { get; set; }
     public decimal? Weight { get; set; }
     public string? Location { get; set; }
@@ -68,7 +69,7 @@ public class UpdateProductDto
 
     // New fields from Excel import
     public string? ProductType { get; set; }
-    public string? Brand { get; set; }
+    public Guid? BrandId { get; set; }
     public string? Unit { get; set; }
     public decimal? Weight { get; set; }
     public string? Location { get; set; }

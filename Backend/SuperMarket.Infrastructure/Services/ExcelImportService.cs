@@ -37,8 +37,7 @@ public class ExcelImportService : IExcelImportService
             defaultCategory = new Category 
             { 
                 Name = "Uncategorized", 
-                Description = "Auto-created during import",
-                CreatedAt = DateTime.UtcNow
+                Description = "Auto-created during import"
             };
             _context.Categories.Add(defaultCategory);
             await _context.SaveChangesAsync();
@@ -57,6 +56,7 @@ public class ExcelImportService : IExcelImportService
                 var maVach = worksheet.Cells[row, 4].GetValue<string>() ?? string.Empty;
                 var tenHang = worksheet.Cells[row, 5].GetValue<string>() ?? string.Empty;
                 var thuongHieu = worksheet.Cells[row, 6].GetValue<string>() ?? string.Empty;
+                var brand = await _context.Brands.FirstOrDefaultAsync(b => b.Name == thuongHieu);
                 var giaBan = worksheet.Cells[row, 7].GetValue<decimal?>() ?? 0;
                 var giaVon = worksheet.Cells[row, 8].GetValue<decimal?>() ?? 0;
                 var tonKho = worksheet.Cells[row, 9].GetValue<int?>() ?? 0;
@@ -90,8 +90,7 @@ public class ExcelImportService : IExcelImportService
                             category = new Category 
                             { 
                                 Name = nhomHang, 
-                                Description = $"Auto-created from Excel import",
-                                CreatedAt = DateTime.UtcNow
+                                Description = $"Auto-created from Excel import"
                             };
                             _context.Categories.Add(category);
                             await _context.SaveChangesAsync();
@@ -119,7 +118,7 @@ public class ExcelImportService : IExcelImportService
                         tonLonNhat,
                         dangKinhDoanh == 1,
                         loaiHang,
-                        thuongHieu,
+                        brand,
                         dvt,
                         trongLuong,
                         viTri,
@@ -151,7 +150,7 @@ public class ExcelImportService : IExcelImportService
                         tonLonNhat,
                         dangKinhDoanh == 1,
                         loaiHang,
-                        thuongHieu,
+                        brand,
                         dvt,
                         trongLuong,
                         viTri,

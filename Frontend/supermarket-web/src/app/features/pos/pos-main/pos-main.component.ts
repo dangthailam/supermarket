@@ -11,11 +11,10 @@ interface CartItem {
 }
 
 @Component({
-  selector: 'app-pos-main',
-  standalone: true,
-  imports: [CommonModule, FormsModule],
-  templateUrl: './pos-main.component.html',
-  styleUrl: './pos-main.component.scss'
+    selector: 'app-pos-main',
+    imports: [CommonModule, FormsModule],
+    templateUrl: './pos-main.component.html',
+    styleUrl: './pos-main.component.scss'
 })
 export class PosMainComponent implements OnInit {
   cart: CartItem[] = [];

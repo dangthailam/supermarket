@@ -2,16 +2,15 @@ import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterLink } from '@angular/router';
 import { SuperMarketApiClient, ProductDto } from '../../core/api/api-client';
-import { CardModule } from 'primeng/card';
-import { ButtonModule } from 'primeng/button';
-import { ProgressSpinnerModule } from 'primeng/progressspinner';
+import { Card } from 'primeng/card';
+import { Button } from 'primeng/button';
+import { ProgressSpinner } from 'primeng/progressspinner';
 
 @Component({
-  selector: 'app-dashboard',
-  standalone: true,
-  imports: [CommonModule, RouterLink, CardModule, ButtonModule, ProgressSpinnerModule],
-  templateUrl: './dashboard.component.html',
-  styleUrl: './dashboard.component.scss'
+    selector: 'app-dashboard',
+    imports: [CommonModule, RouterLink, Card, Button, ProgressSpinner],
+    templateUrl: './dashboard.component.html',
+    styleUrl: './dashboard.component.scss'
 })
 export class DashboardComponent implements OnInit {
   todaySales = 0;

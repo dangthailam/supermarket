@@ -67,7 +67,7 @@
       <!-- Category -->
       <div class="field">
         <label for="categoryId">Category <span class="required">*</span></label>
-        <p-dropdown
+        <p-select
           inputId="categoryId"
           [options]="categories"
           formControlName="categoryId"
@@ -77,7 +77,7 @@
           [class.ng-invalid]="isFieldInvalid('categoryId')"
           [class.ng-dirty]="isFieldInvalid('categoryId')"
           styleClass="w-full">
-        </p-dropdown>
+        </p-select>
         @if (isFieldInvalid('categoryId')) {
           <small class="p-error">{{ getErrorMessage('categoryId') }}</small>
         }

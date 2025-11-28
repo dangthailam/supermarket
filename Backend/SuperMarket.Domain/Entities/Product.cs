@@ -18,8 +18,9 @@ public class Product : Entity
     public bool IsActive { get; private set; } = true;
 
     // New fields from Excel import
-    public string? ProductType { get; private set; }  // Loại hàng
-    public string? Brand { get; private set; }  // Thương hiệu
+    public string? ProductType { get; private set; }  // Loại hàng: Hàng hóa, dịch vụ hay combo
+    public Guid? BrandId { get; private set; }  // Thương hiệu
+    public Brand? Brand { get; set; }
     public string? Unit { get; private set; }  // ĐVT (Unit of Measure)
     public decimal? Weight { get; private set; }  // Trọng lượng
     public string? Location { get; private set; }  // Vị trí
@@ -54,7 +55,7 @@ public class Product : Entity
     }
 
     public void UpdateDetails(string name, string? description, decimal price, decimal costPrice, int minStockLevel, int? maxStockLevel, bool isActive,
-                              string? productType, string? brand, string? unit, decimal? weight, string? location,
+                              string? productType, Brand? brand, string? unit, decimal? weight, string? location,
                               bool directSalesEnabled, bool pointsEnabled)
     {
         Name = name;
@@ -66,6 +67,7 @@ public class Product : Entity
         IsActive = isActive;
         ProductType = productType;
         Brand = brand;
+        BrandId = brand?.Id;
         Unit = unit;
         Weight = weight;
         Location = location;

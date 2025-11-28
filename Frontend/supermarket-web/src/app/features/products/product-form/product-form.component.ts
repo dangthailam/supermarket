@@ -3,34 +3,33 @@ import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
 import { SuperMarketApiClient, ProductDto, CreateProductDto, UpdateProductDto, CategoryDto } from '../../../core/api/api-client';
-import { CardModule } from 'primeng/card';
-import { InputTextModule } from 'primeng/inputtext';
-import { InputTextareaModule } from 'primeng/inputtextarea';
-import { InputNumberModule } from 'primeng/inputnumber';
-import { DropdownModule } from 'primeng/dropdown';
-import { CheckboxModule } from 'primeng/checkbox';
-import { ButtonModule } from 'primeng/button';
-import { MessageModule } from 'primeng/message';
-import { ProgressSpinnerModule } from 'primeng/progressspinner';
+import { Card } from 'primeng/card';
+import { InputText } from 'primeng/inputtext';
+import { Textarea } from 'primeng/textarea';
+import { InputNumber } from 'primeng/inputnumber';
+import { Select } from 'primeng/select';
+import { Checkbox } from 'primeng/checkbox';
+import { Button } from 'primeng/button';
+import { Message } from 'primeng/message';
+import { ProgressSpinner } from 'primeng/progressspinner';
 
 @Component({
-  selector: 'app-product-form',
-  standalone: true,
-  imports: [
-    CommonModule,
-    ReactiveFormsModule,
-    CardModule,
-    InputTextModule,
-    InputTextareaModule,
-    InputNumberModule,
-    DropdownModule,
-    CheckboxModule,
-    ButtonModule,
-    MessageModule,
-    ProgressSpinnerModule
-  ],
-  templateUrl: './product-form.component.html',
-  styleUrl: './product-form.component.scss'
+    selector: 'app-product-form',
+    imports: [
+        CommonModule,
+        ReactiveFormsModule,
+        Card,
+        InputText,
+        Textarea,
+        InputNumber,
+        Select,
+        Checkbox,
+        Button,
+        Message,
+        ProgressSpinner
+    ],
+    templateUrl: './product-form.component.html',
+    styleUrl: './product-form.component.scss'
 })
 export class ProductFormComponent implements OnInit {
   productForm!: FormGroup;

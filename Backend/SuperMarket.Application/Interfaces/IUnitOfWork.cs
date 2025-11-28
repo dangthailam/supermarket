@@ -9,6 +9,7 @@ public interface IUnitOfWork : IDisposable
     IRepository<Transaction> Transactions { get; }
     IRepository<TransactionItem> TransactionItems { get; }
     IRepository<InventoryMovement> InventoryMovements { get; }
+    IRepository<Brand> Brands { get; }
     IRepository<User> Users { get; }
 
     Task<int> SaveChangesAsync();

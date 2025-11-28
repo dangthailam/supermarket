@@ -12,6 +12,7 @@ public class UnitOfWork : IUnitOfWork
     private IDbContextTransaction? _transaction;
 
     public IRepository<Category> Categories { get; }
+    public IRepository<Brand> Brands { get; }
     public IRepository<Product> Products { get; }
     public IRepository<Transaction> Transactions { get; }
     public IRepository<TransactionItem> TransactionItems { get; }

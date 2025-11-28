@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using SuperMarket.Infrastructure.Data;
 
@@ -11,9 +12,11 @@ using SuperMarket.Infrastructure.Data;
 namespace SuperMarket.Infrastructure.Migrations
 {
     [DbContext(typeof(SuperMarketDbContext))]
-    partial class SuperMarketDbContextModelSnapshot : ModelSnapshot
+    [Migration("20251128044621_Brand")]
+    partial class Brand
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder

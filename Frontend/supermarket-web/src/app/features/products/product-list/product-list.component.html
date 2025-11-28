@@ -2,171 +2,14 @@
 <p-confirmDialog></p-confirmDialog>
 
 <div class="products-container">
-  <!-- Left Sidebar Filter Panel -->
-  <aside class="filter-sidebar">
-    <div class="filter-section">
-      <h3 class="filter-title">Hàng hóa</h3>
-      <button class="btn-new">
-        <i class="pi pi-plus"></i>
-        Tạo mới
-      </button>
-    </div>
-
-    <div class="filter-section">
-      <label class="filter-label">Nhóm hàng</label>
-      <p-dropdown
-        [options]="categories"
-        placeholder="Chọn nhóm hàng"
-        styleClass="w-full"
-        [showClear]="true"
-      >
-      </p-dropdown>
-    </div>
-
-    <div class="filter-section">
-      <label class="filter-label">Tồn kho</label>
-      <div class="radio-group">
-        <div class="radio-item">
-          <p-radioButton
-            name="stock"
-            value="all"
-            [(ngModel)]="stockFilter"
-            inputId="stock-all"
-          >
-          </p-radioButton>
-          <label for="stock-all" class="radio-label">Toàn thời gian</label>
-          <i class="pi pi-angle-right"></i>
-        </div>
-        <div class="radio-item">
-          <p-radioButton
-            name="stock"
-            value="custom"
-            [(ngModel)]="stockFilter"
-            inputId="stock-custom"
-          >
-          </p-radioButton>
-          <label for="stock-custom" class="radio-label">Tùy chỉnh</label>
-          <i class="pi pi-calendar"></i>
-        </div>
-      </div>
-    </div>
-
-    <div class="filter-section">
-      <label class="filter-label">Dự kiện hết hàng</label>
-      <input type="text" pInputText placeholder="Tất cả" class="w-full" />
-    </div>
-
-    <div class="filter-section">
-      <label class="filter-label">Thời gian tạo</label>
-      <div class="radio-group">
-        <div class="radio-item">
-          <p-radioButton
-            name="time"
-            value="all"
-            [(ngModel)]="timeFilter"
-            inputId="time-all"
-          >
-          </p-radioButton>
-          <label for="time-all" class="radio-label">Toàn thời gian</label>
-          <i class="pi pi-angle-right"></i>
-        </div>
-        <div class="radio-item">
-          <p-radioButton
-            name="time"
-            value="custom"
-            [(ngModel)]="timeFilter"
-            inputId="time-custom"
-          >
-          </p-radioButton>
-          <label for="time-custom" class="radio-label">Tùy chỉnh</label>
-          <i class="pi pi-calendar"></i>
-        </div>
-      </div>
-    </div>
-
-    <div class="filter-section">
-      <label class="filter-label">Nhà cung cấp</label>
-      <input
-        type="text"
-        pInputText
-        placeholder="Chọn nhà cung cấp"
-        class="w-full"
-      />
-    </div>
-
-    <div class="filter-section">
-      <label class="filter-label">Thương hiệu</label>
-      <input
-        type="text"
-        pInputText
-        placeholder="Chọn thương hiệu"
-        class="w-full"
-      />
-    </div>
-
-    <div class="filter-section">
-      <label class="filter-label">Vị trí</label>
-      <input type="text" pInputText placeholder="Chọn vị trí" class="w-full" />
-    </div>
-
-    <div class="filter-section">
-      <label class="filter-label">Loại hàng</label>
-      <input
-        type="text"
-        pInputText
-        placeholder="Chọn loại hàng"
-        class="w-full"
-      />
-    </div>
-
-    <div class="filter-section">
-      <label class="filter-label">Tích điểm</label>
-      <div class="checkbox-group">
-        <div class="checkbox-item">
-          <p-checkbox binary="true" inputId="checkbox-all"></p-checkbox>
-          <label for="checkbox-all">Tất cả</label>
-        </div>
-        <div class="checkbox-item">
-          <p-checkbox binary="true" inputId="checkbox-yes"></p-checkbox>
-          <label for="checkbox-yes">Có</label>
-        </div>
-        <div class="checkbox-item">
-          <p-checkbox binary="true" inputId="checkbox-no"></p-checkbox>
-          <label for="checkbox-no">Không</label>
-        </div>
-      </div>
-    </div>
-
-    <div class="filter-section">
-      <label class="filter-label">Bán trực tiếp</label>
-      <input type="text" pInputText placeholder="Tất cả" class="w-full" />
-    </div>
-  </aside>
 
   <!-- Main Content Area -->
   <div class="main-area">
     <!-- Toolbar -->
     <div class="toolbar">
-      <div class="toolbar-left">
-        <div class="search-box">
-          <i class="pi pi-search"></i>
-          <input
-            type="text"
-            pInputText
-            placeholder="Theo mã, tên hàng"
-            (input)="searchProducts($any($event.target).value)"
-          />
-        </div>
-        <button class="btn-filter">
-          <i class="pi pi-filter"></i>
-        </button>
-      </div>
       <div class="toolbar-right">
-        <button class="btn-action" (onClick)="addProduct()">
-          <i class="pi pi-plus"></i>
-          Tạo mới
-        </button>
-        <button class="btn-action">
+        <p-button label="Tạo mới" severity="primary" icon="pi pi-plus" (onClick)="addProduct()"></p-button>
+        <!-- <button class="btn-action">
           <i class="pi pi-upload"></i>
           Import file
         </button>
@@ -182,7 +25,7 @@
         </button>
         <button class="btn-icon">
           <i class="pi pi-question-circle"></i>
-        </button>
+        </button> -->
       </div>
     </div>
 

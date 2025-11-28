@@ -36,22 +36,6 @@ public class ProductService : IProductService
 
     public async Task<PaginatedResult<ProductDto>> GetProductsPagedAsync(PaginationParams paginationParams)
     {
-        // Build filter expression
-        Func<IQueryable<Product>, IQueryable<Product>> filter = query =>
-        {
-            if (!string.IsNullOrWhiteSpace(paginationParams.SearchTerm))
-            {
-                var searchTerm = paginationParams.SearchTerm.ToLower();
-                query = query.Where(p =>
-                    p.Name.ToLower().Contains(searchTerm) ||
-                    p.SKU.ToLower().Contains(searchTerm) ||
-                    (p.Barcode != null && p.Barcode.ToLower().Contains(searchTerm)) ||
-                    (p.Brand != null && p.Brand.ToLower().Contains(searchTerm))
-                );
-            }
-            return query;
-        };
-
         // Build sort expression
         Func<IQueryable<Product>, IOrderedQueryable<Product>> orderBy = query =>
         {
@@ -88,7 +72,7 @@ public class ProductService : IProductService
                 p.Name.ToLower().Contains(searchTerm) ||
                 p.SKU.ToLower().Contains(searchTerm) ||
                 (p.Barcode != null && p.Barcode.ToLower().Contains(searchTerm)) ||
-                (p.Brand != null && p.Brand.ToLower().Contains(searchTerm))
+                (p.Brand != null && p.Brand.Name.ToLower().Contains(searchTerm))
             );
         }
 
@@ -162,6 +146,8 @@ public class ProductService : IProductService
         // Create product using constructor
         var product = new Product(dto.Name, dto.SKU, category, dto.Price, dto.CostPrice);
 
+        var brand = await _unitOfWork.Brands.FirstOrDefaultAsync(b => b.Id == dto.BrandId);
+
         // Update additional details
         product.UpdateDetails(
             dto.Name,
@@ -172,7 +158,7 @@ public class ProductService : IProductService
             dto.MaxStockLevel,
             true, // IsActive = true for new products
             dto.ProductType,
-            dto.Brand,
+            brand,
             dto.Unit,
             dto.Weight,
             dto.Location,
@@ -206,7 +192,7 @@ public class ProductService : IProductService
         var maxStockLevel = dto.MaxStockLevel ?? product.MaxStockLevel;
         var isActive = dto.IsActive ?? product.IsActive;
         var productType = dto.ProductType ?? product.ProductType;
-        var brand = dto.Brand ?? product.Brand;
+        var brand = await _unitOfWork.Brands.FirstOrDefaultAsync(b => b.Id == dto.BrandId);
         var unit = dto.Unit ?? product.Unit;
         var weight = dto.Weight ?? product.Weight;
         var location = dto.Location ?? product.Location;
@@ -300,7 +286,8 @@ public class ProductService : IProductService
             ImageUrl = product.ImageUrl,
             IsActive = product.IsActive,
             ProductType = product.ProductType,
-            Brand = product.Brand,
+            BrandName = product.Brand?.Name,
+            BrandId = product.BrandId,
             Unit = product.Unit,
             Weight = product.Weight,
             Location = product.Location,
@@ -339,7 +326,8 @@ public class ProductService : IProductService
             ImageUrl = product.ImageUrl,
             IsActive = product.IsActive,
             ProductType = product.ProductType,
-            Brand = product.Brand,
+            BrandName = product.Brand?.Name,
+            BrandId = product.BrandId,
             Unit = product.Unit,
             Weight = product.Weight,
             Location = product.Location,

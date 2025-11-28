@@ -3,36 +3,31 @@ import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { SuperMarketApiClient, ProductDto, ProductDtoPaginatedResult } from '../../../core/api/api-client';
-import { DropdownModule } from 'primeng/dropdown';
-import { RadioButtonModule } from 'primeng/radiobutton';
-import { CheckboxModule } from 'primeng/checkbox';
-import { ButtonModule } from 'primeng/button';
-import { InputTextModule } from 'primeng/inputtext';
-import { ConfirmDialogModule } from 'primeng/confirmdialog';
-import { ToastModule } from 'primeng/toast';
+import { ConfirmDialog } from 'primeng/confirmdialog';
 import { TableModule } from 'primeng/table';
 import { TooltipModule } from 'primeng/tooltip';
 import { ConfirmationService, MessageService } from 'primeng/api';
+import { ButtonModule } from 'primeng/button';
+import { SelectModule } from 'primeng/select';
+import { ToastModule } from 'primeng/toast';
+import { CheckboxModule } from 'primeng/checkbox';
 
 @Component({
-  selector: 'app-product-list',
-  standalone: true,
-  imports: [
-    CommonModule,
-    FormsModule,
-    DropdownModule,
-    RadioButtonModule,
-    CheckboxModule,
-    ButtonModule,
-    InputTextModule,
-    ConfirmDialogModule,
-    ToastModule,
-    TableModule,
-    TooltipModule
-  ],
-  providers: [ConfirmationService, MessageService],
-  templateUrl: './product-list.component.html',
-  styleUrl: './product-list.component.scss'
+    selector: 'app-product-list',
+    imports: [
+        CommonModule,
+        FormsModule,
+        SelectModule,
+        ConfirmDialog,
+        TableModule,
+        TooltipModule,
+        ButtonModule,
+        ToastModule,
+        CheckboxModule
+    ],
+    providers: [ConfirmationService, MessageService],
+    templateUrl: './product-list.component.html',
+    styleUrl: './product-list.component.scss'
 })
 export class ProductListComponent implements OnInit {
   products: ProductDto[] = [];

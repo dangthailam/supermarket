@@ -124,7 +124,7 @@ export class ProductListComponent implements OnInit {
   loadProducts(): void {
     this.loading = true;
 
-    this.apiClient.paged(
+    this.apiClient.paged2(
       this.currentPage,
       this.pageSize,
       this.searchTerm || undefined,

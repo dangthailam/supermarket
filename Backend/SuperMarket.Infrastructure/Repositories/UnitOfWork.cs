@@ -19,6 +19,7 @@ public class UnitOfWork : IUnitOfWork
     public IRepository<InventoryMovement> InventoryMovements { get; }
     public IRepository<User> Users { get; }
     public IRepository<Provider> Providers { get; }
+    public IRepository<Customer> Customers { get; }
 
     public UnitOfWork(SuperMarketDbContext context)
     {
@@ -31,6 +32,7 @@ public class UnitOfWork : IUnitOfWork
         Users = new Repository<User>(context);
         Providers = new Repository<Provider>(context);
         Brands = new Repository<Brand>(context);
+        Customers = new Repository<Customer>(context);
     }
 
     public async Task<int> SaveChangesAsync()

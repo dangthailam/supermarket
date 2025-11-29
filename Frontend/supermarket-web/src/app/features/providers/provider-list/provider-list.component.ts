@@ -128,7 +128,7 @@ export class ProviderListComponent implements OnInit {
     const pageNumber = event?.first ? event.first / event.rows + 1 : 1;
     const pageSize = event?.rows || this.pageSize;
 
-    this.providerService.paged2(pageNumber, pageSize, this.searchTerm).subscribe({
+    this.providerService.paged3(pageNumber, pageSize, this.searchTerm).subscribe({
       next: (result: ProviderDtoPaginatedResult) => {
         this.providers = result.items!;
         this.totalRecords = result.totalCount!;

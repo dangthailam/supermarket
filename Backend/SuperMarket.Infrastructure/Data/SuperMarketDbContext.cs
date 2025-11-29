@@ -18,6 +18,7 @@ public class SuperMarketDbContext : DbContext
     public DbSet<InventoryMovement> InventoryMovements { get; set; }
     public DbSet<User> Users { get; set; }
     public DbSet<Provider> Providers { get; set; }
+    public DbSet<Customer> Customers { get; set; }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -170,6 +171,30 @@ public class SuperMarketDbContext : DbContext
             entity.HasIndex(e => e.Code).IsUnique();
             entity.HasIndex(e => e.Name);
             entity.HasIndex(e => e.Email);
+        });
+
+        // Customer configuration
+        modelBuilder.Entity<Customer>(entity =>
+        {
+            entity.HasKey(e => e.Id);
+            entity.Property(e => e.Name).IsRequired().HasMaxLength(200);
+            entity.Property(e => e.Email).IsRequired().HasMaxLength(200);
+            entity.Property(e => e.Phone).HasMaxLength(20);
+            entity.Property(e => e.Gender).HasMaxLength(20);
+            entity.Property(e => e.CustomerType).HasMaxLength(50);
+            entity.Property(e => e.IsActive).HasDefaultValue(true);
+
+            // Value Object configuration for Address
+            entity.OwnsOne(e => e.Address, address =>
+            {
+                address.Property(a => a.AddressLine).HasColumnName("Address").HasMaxLength(300);
+                address.Property(a => a.District).HasMaxLength(100);
+                address.Property(a => a.City).HasMaxLength(100);
+            });
+
+            entity.HasIndex(e => e.Email).IsUnique();
+            entity.HasIndex(e => e.Name);
+            entity.HasIndex(e => e.IsActive);
         });
     }
 }

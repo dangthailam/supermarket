@@ -1,7 +1,7 @@
 <p-card>
   <ng-template pTemplate="header">
     <div class="form-header">
-      <h2>{{ isEditMode ? 'Edit Product' : 'Create New Product' }}</h2>
+      <h2>{{ isEditMode ? "Edit Product" : "Create New Product" }}</h2>
     </div>
   </ng-template>
 
@@ -16,7 +16,12 @@
     </div>
   }
 
-  <form [formGroup]="productForm" (ngSubmit)="onSubmit()" class="product-form" *ngIf="!loading">
+  <form
+    [formGroup]="productForm"
+    (ngSubmit)="onSubmit()"
+    class="product-form"
+    *ngIf="!loading"
+  >
     <div class="form-grid">
       <!-- SKU -->
       <div class="field">
@@ -44,8 +49,8 @@
           [class.ng-dirty]="isFieldInvalid('name')"
           class="w-full"
         />
-        @if (isFieldInvalid('name')) {
-          <small class="p-error">{{ getErrorMessage('name') }}</small>
+        @if (isFieldInvalid("name")) {
+          <small class="p-error">{{ getErrorMessage("name") }}</small>
         }
       </div>
 
@@ -73,10 +78,11 @@
           placeholder="Select Category"
           [class.ng-invalid]="isFieldInvalid('categoryId')"
           [class.ng-dirty]="isFieldInvalid('categoryId')"
-          styleClass="w-full">
+          styleClass="w-full"
+        >
         </p-select>
-        @if (isFieldInvalid('categoryId')) {
-          <small class="p-error">{{ getErrorMessage('categoryId') }}</small>
+        @if (isFieldInvalid("categoryId")) {
+          <small class="p-error">{{ getErrorMessage("categoryId") }}</small>
         }
       </div>
 
@@ -92,16 +98,19 @@
           [minFractionDigits]="2"
           [class.ng-invalid]="isFieldInvalid('price')"
           [class.ng-dirty]="isFieldInvalid('price')"
-          styleClass="w-full">
+          styleClass="w-full"
+        >
         </p-inputNumber>
-        @if (isFieldInvalid('price')) {
-          <small class="p-error">{{ getErrorMessage('price') }}</small>
+        @if (isFieldInvalid("price")) {
+          <small class="p-error">{{ getErrorMessage("price") }}</small>
         }
       </div>
 
       <!-- Cost Price -->
       <div class="field">
-        <label for="costPrice">Cost Price <span class="required">*</span></label>
+        <label for="costPrice"
+          >Cost Price <span class="required">*</span></label
+        >
         <p-inputNumber
           inputId="costPrice"
           formControlName="costPrice"
@@ -111,44 +120,52 @@
           [minFractionDigits]="2"
           [class.ng-invalid]="isFieldInvalid('costPrice')"
           [class.ng-dirty]="isFieldInvalid('costPrice')"
-          styleClass="w-full">
+          styleClass="w-full"
+        >
         </p-inputNumber>
-        @if (isFieldInvalid('costPrice')) {
-          <small class="p-error">{{ getErrorMessage('costPrice') }}</small>
+        @if (isFieldInvalid("costPrice")) {
+          <small class="p-error">{{ getErrorMessage("costPrice") }}</small>
         }
       </div>
 
       <!-- Stock Quantity -->
       <div class="field">
-        <label for="stockQuantity">Stock Quantity <span class="required">*</span></label>
+        <label for="stockQuantity"
+          >Stock Quantity <span class="required">*</span></label
+        >
         <p-inputNumber
           inputId="stockQuantity"
           formControlName="stockQuantity"
-          [disabled]="isEditMode"
           [class.ng-invalid]="isFieldInvalid('stockQuantity')"
           [class.ng-dirty]="isFieldInvalid('stockQuantity')"
-          styleClass="w-full">
+          styleClass="w-full"
+        >
         </p-inputNumber>
         @if (isEditMode) {
-          <small class="form-hint">Stock is managed via inventory movements</small>
+          <small class="form-hint"
+            >Stock is managed via inventory movements</small
+          >
         }
-        @if (isFieldInvalid('stockQuantity')) {
-          <small class="p-error">{{ getErrorMessage('stockQuantity') }}</small>
+        @if (isFieldInvalid("stockQuantity")) {
+          <small class="p-error">{{ getErrorMessage("stockQuantity") }}</small>
         }
       </div>
 
       <!-- Min Stock Level -->
       <div class="field">
-        <label for="minStockLevel">Min Stock Level <span class="required">*</span></label>
+        <label for="minStockLevel"
+          >Min Stock Level <span class="required">*</span></label
+        >
         <p-inputNumber
           inputId="minStockLevel"
           formControlName="minStockLevel"
           [class.ng-invalid]="isFieldInvalid('minStockLevel')"
           [class.ng-dirty]="isFieldInvalid('minStockLevel')"
-          styleClass="w-full">
+          styleClass="w-full"
+        >
         </p-inputNumber>
-        @if (isFieldInvalid('minStockLevel')) {
-          <small class="p-error">{{ getErrorMessage('minStockLevel') }}</small>
+        @if (isFieldInvalid("minStockLevel")) {
+          <small class="p-error">{{ getErrorMessage("minStockLevel") }}</small>
         }
       </div>
 
@@ -164,16 +181,46 @@
         ></textarea>
       </div>
 
-      <!-- Image URL (full width) -->
+      <!-- Product Image Upload -->
       <div class="field full-width">
-        <label for="imageUrl">Image URL</label>
-        <input
-          id="imageUrl"
-          type="text"
-          pInputText
-          formControlName="imageUrl"
-          class="w-full"
-        />
+        <label>Product Image</label>
+        <p-fileUpload
+          name="productImage"
+          [url]="uploadUrl"
+          [multiple]="false"
+          accept="image/*"
+          [maxFileSize]="5000000"
+          [showUploadButton]="false"
+          [showCancelButton]="false"
+          (onSelect)="onImageSelect($event)"
+          (onUpload)="onImageUpload($event)"
+          (onError)="onImageUploadError($event)"
+          [auto]="true"
+          chooseLabel="Choose Image or Take Photo"
+        >
+          <ng-template pTemplate="content">
+            @if (uploadedFiles.length) {
+              <ul>
+                <li
+                  *ngFor="let file of uploadedFiles"
+                  class="flex items-center justify-content-between"
+                >
+                  <div>
+                    <span>{{ file.name }} - {{ file.size }} bytes</span>
+                  </div>
+                  <p-button
+                    type="button"
+                    icon="pi pi-times"
+                    (onClick)="removeUploadedFile(file)"
+                    [text]="true"
+                    severity="danger"
+                  >
+                  </p-button>
+                </li>
+              </ul>
+            }
+          </ng-template>
+        </p-fileUpload>
       </div>
 
       <!-- Is Active -->
@@ -182,7 +229,8 @@
           <p-checkbox
             inputId="isActive"
             formControlName="isActive"
-            [binary]="true">
+            [binary]="true"
+          >
           </p-checkbox>
           <label for="isActive">Active</label>
         </div>
@@ -195,14 +243,22 @@
         icon="pi pi-times"
         severity="secondary"
         (onClick)="onCancel()"
-        [disabled]="loading">
+        [disabled]="loading"
+      >
       </p-button>
       <p-button
-        [label]="loading ? 'Saving...' : (isEditMode ? 'Update Product' : 'Create Product')"
+        [label]="
+          loading
+            ? 'Saving...'
+            : isEditMode
+              ? 'Update Product'
+              : 'Create Product'
+        "
         icon="pi pi-check"
         type="submit"
         [disabled]="loading"
-        [loading]="loading">
+        [loading]="loading"
+      >
       </p-button>
     </div>
   </form>

@@ -6,7 +6,7 @@ namespace SuperMarket.Domain.Entities;
 public class Customer : Entity
 {
     public string Name { get; private set; } = string.Empty;
-    public string Email { get; private set; } = string.Empty;
+    public string? Email { get; private set; }
     public string? Phone { get; private set; }
     public Address? Address { get; private set; }
     public DateTime? DateOfBirth { get; private set; }
@@ -19,7 +19,7 @@ public class Customer : Entity
     {
     }
 
-    public Customer(string name, string email, string? phone, Address? address, DateTime? dateOfBirth, string? gender, string? customerType)
+    public Customer(string name, string? email, string? phone, Address? address, DateTime? dateOfBirth, string? gender, string? customerType)
     {
         Name = name;
         Email = email;
@@ -31,7 +31,7 @@ public class Customer : Entity
         IsActive = true;
     }
 
-    public void Update(string name, string email, string? phone, Address? address, DateTime? dateOfBirth, string? gender, string? customerType)
+    public void Update(string name, string? email, string? phone, Address? address, DateTime? dateOfBirth, string? gender, string? customerType)
     {
         Name = name;
         Email = email;

@@ -4,7 +4,7 @@ public class CustomerDto
 {
     public Guid Id { get; set; }
     public string Name { get; set; } = string.Empty;
-    public string Email { get; set; } = string.Empty;
+    public string? Email { get; set; }
     public string? Phone { get; set; }
     public string? Address { get; set; }
     public string? District { get; set; }
@@ -19,7 +19,7 @@ public class CustomerDto
 public class CreateCustomerDto
 {
     public string Name { get; set; } = string.Empty;
-    public string Email { get; set; } = string.Empty;
+    public string? Email { get; set; }
     public string? Phone { get; set; }
     public string? Address { get; set; }
     public string? District { get; set; }

@@ -51,7 +51,7 @@ import { SuperMarketApiClient, CustomerDto, CreateCustomerDto, UpdateCustomerDto
             </div>
 
             <div class="col-12 md:col-6">
-              <label for="email" class="block mb-2">Email <span class="text-red-500">*</span></label>
+              <label for="email" class="block mb-2">Email</label>
               <input
                 pInputText
                 id="email"
@@ -184,7 +184,7 @@ export class CustomerFormComponent implements OnInit {
   ) {
     this.customerForm = this.fb.group({
       name: [null, Validators.required],
-      email: [null, [Validators.required, Validators.email]],
+      email: [null, Validators.email],
       phone: [null],
       address: [null],
       district: [null],

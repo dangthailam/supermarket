@@ -18,7 +18,9 @@ public static class DependencyInjection
         services.AddDbContext<SuperMarketDbContext>(options =>
             options.UseSqlServer(
                 configuration.GetConnectionString("DefaultConnection"),
-                sqlOptions => sqlOptions.EnableRetryOnFailure()
+                sqlOptions => sqlOptions
+                    .EnableRetryOnFailure()
+                    .UseQuerySplittingBehavior(QuerySplittingBehavior.SplitQuery)
             ));
 
         services.AddScoped<IUnitOfWork, UnitOfWork>();

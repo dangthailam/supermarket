@@ -1,11 +1,33 @@
 using SuperMarket.Application;
 using SuperMarket.Infrastructure;
 using OfficeOpenXml;
+using Serilog;
 
 // Set EPPlus license for version 8+
 ExcelPackage.License.SetNonCommercialPersonal("SuperMarket App");
 
-var builder = WebApplication.CreateBuilder(args);
+// Configure Serilog
+Log.Logger = new LoggerConfiguration()
+    .MinimumLevel.Information()
+    .MinimumLevel.Override("Microsoft.EntityFrameworkCore.Database.Command", Serilog.Events.LogEventLevel.Information)
+    .MinimumLevel.Override("Microsoft.EntityFrameworkCore", Serilog.Events.LogEventLevel.Warning)
+    .MinimumLevel.Override("Microsoft.AspNetCore", Serilog.Events.LogEventLevel.Warning)
+    .WriteTo.Console(outputTemplate: "[{Timestamp:HH:mm:ss} {Level:u3}] {Message:lj}{NewLine}{Exception}")
+    .WriteTo.File(
+        "logs/supermarket-.txt",
+        rollingInterval: RollingInterval.Day,
+        outputTemplate: "[{Timestamp:yyyy-MM-dd HH:mm:ss.fff zzz}] [{Level:u3}] {Message:lj}{NewLine}{Exception}")
+    .Enrich.FromLogContext()
+    .CreateLogger();
+
+try
+{
+    Log.Information("Starting SuperMarket API...");
+
+    var builder = WebApplication.CreateBuilder(args);
+    
+    // Add Serilog to the service collection
+    builder.Host.UseSerilog();
 
 
 builder.Services.AddApplication();
@@ -58,6 +80,9 @@ app.UseHttpsRedirection();
 
 app.UseResponseCompression();
 
+// Enable static files for uploads
+app.UseStaticFiles();
+
 app.UseCors("AllowAngularApp");
 
 app.UseAuthorization();
@@ -65,3 +90,12 @@ app.UseAuthorization();
 app.MapControllers();
 
 app.Run();
+}
+catch (Exception ex)
+{
+    Log.Fatal(ex, "Application terminated unexpectedly");
+}
+finally
+{
+    Log.CloseAndFlush();
+}

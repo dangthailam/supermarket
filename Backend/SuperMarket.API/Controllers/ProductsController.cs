@@ -118,4 +118,47 @@ public class ProductsController : ControllerBase
         
         return NoContent();
     }
+
+    [HttpPost("upload-image")]
+    public async Task<ActionResult<object>> UploadProductImage(IFormFile productImage)
+    {
+        if (productImage == null || productImage.Length == 0)
+            return BadRequest(new { message = "No file provided" });
+
+        // Validate file type
+        var allowedMimeTypes = new[] { "image/jpeg", "image/png", "image/gif", "image/webp" };
+        if (!allowedMimeTypes.Contains(productImage.ContentType.ToLower()))
+            return BadRequest(new { message = "Only image files are allowed (JPG, PNG, GIF, WEBP)" });
+
+        // Validate file size (5MB max)
+        if (productImage.Length > 5 * 1024 * 1024)
+            return BadRequest(new { message = "File size must be less than 5MB" });
+
+        try
+        {
+            // Generate unique filename
+            var fileName = $"products/{Guid.NewGuid()}_{DateTime.UtcNow:yyyyMMddHHmmss}_{Path.GetFileName(productImage.FileName)}";
+            
+            // Save file to blob storage
+            // For now, we'll save to local folder. Replace this with Azure Blob Storage later
+            var uploadsFolder = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "uploads");
+            Directory.CreateDirectory(uploadsFolder);
+            
+            var filePath = Path.Combine(uploadsFolder, fileName);
+            
+            using (var stream = new FileStream(filePath, FileMode.Create))
+            {
+                await productImage.CopyToAsync(stream);
+            }
+
+            // Return the image URL (you'll replace /uploads with your blob storage URL)
+            var imageUrl = $"/uploads/{fileName}";
+            
+            return Ok(new { imageUrl });
+        }
+        catch (Exception ex)
+        {
+            return StatusCode(500, new { message = "Failed to upload image", error = ex.Message });
+        }
+    }
 }

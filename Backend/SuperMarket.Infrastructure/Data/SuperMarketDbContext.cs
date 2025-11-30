@@ -20,6 +20,11 @@ public class SuperMarketDbContext : DbContext
     public DbSet<Provider> Providers { get; set; }
     public DbSet<Customer> Customers { get; set; }
 
+    protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
+    {
+        base.OnConfiguring(optionsBuilder);
+    }
+
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         base.OnModelCreating(modelBuilder);
@@ -178,7 +183,7 @@ public class SuperMarketDbContext : DbContext
         {
             entity.HasKey(e => e.Id);
             entity.Property(e => e.Name).IsRequired().HasMaxLength(200);
-            entity.Property(e => e.Email).IsRequired().HasMaxLength(200);
+            entity.Property(e => e.Email).HasMaxLength(200);
             entity.Property(e => e.Phone).HasMaxLength(20);
             entity.Property(e => e.Gender).HasMaxLength(20);
             entity.Property(e => e.CustomerType).HasMaxLength(50);
@@ -192,7 +197,10 @@ public class SuperMarketDbContext : DbContext
                 address.Property(a => a.City).HasMaxLength(100);
             });
 
-            entity.HasIndex(e => e.Email).IsUnique();
+            // Unique index on Email with filter for non-null values since Email is nullable
+            entity.HasIndex(e => e.Email)
+                .IsUnique()
+                .HasFilter("[Email] IS NOT NULL");
             entity.HasIndex(e => e.Name);
             entity.HasIndex(e => e.IsActive);
         });

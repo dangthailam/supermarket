@@ -1,8 +1,8 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, inject, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
-import { SuperMarketApiClient, ProductDto, CreateProductDto, UpdateProductDto, CategoryDto } from '../../../core/api/api-client';
+import { SuperMarketApiClient, ProductDto, CreateProductDto, UpdateProductDto, CategoryDto, API_BASE_URL } from '../../../core/api/api-client';
 import { Card } from 'primeng/card';
 import { InputText } from 'primeng/inputtext';
 import { Textarea } from 'primeng/textarea';
@@ -12,6 +12,8 @@ import { Checkbox } from 'primeng/checkbox';
 import { Button } from 'primeng/button';
 import { Message } from 'primeng/message';
 import { ProgressSpinner } from 'primeng/progressspinner';
+import { FileUpload, FileUploadEvent } from 'primeng/fileupload';
+import { MessageService } from 'primeng/api';
 
 @Component({
     selector: 'app-product-form',
@@ -26,8 +28,10 @@ import { ProgressSpinner } from 'primeng/progressspinner';
         Checkbox,
         Button,
         Message,
-        ProgressSpinner
+        ProgressSpinner,
+        FileUpload
     ],
+    providers: [MessageService],
     templateUrl: './product-form.component.html',
     styleUrl: './product-form.component.scss'
 })
@@ -38,12 +42,17 @@ export class ProductFormComponent implements OnInit {
   loading = false;
   error = '';
   categories: CategoryDto[] = [];
+  uploadedFiles: any[] = [];
+  imagePreview: string | null = null;
+  private apiBaseUrl = inject(API_BASE_URL);
+  uploadUrl = `${this.apiBaseUrl}/api/products/upload-image`;
 
   constructor(
     private fb: FormBuilder,
     private apiClient: SuperMarketApiClient,
     private route: ActivatedRoute,
-    private router: Router
+    private router: Router,
+    private messageService: MessageService
   ) {
     this.initForm();
   }
@@ -189,5 +198,63 @@ export class ProductFormComponent implements OnInit {
     if (field?.hasError('min')) return `${fieldName} must be at least ${field.errors?.['min'].min}`;
     if (field?.hasError('maxLength')) return `${fieldName} is too long`;
     return '';
+  }
+
+  onImageSelect(event: any): void {
+    console.log('Image selected:', event);
+    const files = event.files;
+    if (files && files.length > 0) {
+      const file = files[0];
+      
+      // Create preview
+      const reader = new FileReader();
+      reader.onload = () => {
+        this.imagePreview = reader.result as string;
+      };
+      reader.readAsDataURL(file);
+
+      this.uploadedFiles.push(file);
+    }
+  }
+
+  onImageUpload(event: any): void {
+    console.log('Image uploaded:', event);
+    const files = event.files;
+    if (files && files.length > 0) {
+      const formData = new FormData();
+      formData.append('file', files[0]);
+
+      this.loading = true;
+      // Call the backend upload endpoint
+      fetch('/api/products/upload-image', {
+        method: 'POST',
+        body: formData
+      })
+      .then(response => response.json())
+      .then((data: any) => {
+        // Set the returned image URL in the form
+        this.productForm.patchValue({ imageUrl: data.imageUrl });
+        this.messageService.add({ severity: 'success', summary: 'Success', detail: 'Image uploaded successfully' });
+        this.loading = false;
+      })
+      .catch(err => {
+        this.error = 'Failed to upload image';
+        this.messageService.add({ severity: 'error', summary: 'Error', detail: 'Failed to upload image' });
+        this.loading = false;
+      });
+    }
+  }
+
+  onImageUploadError(event: any): void {
+    this.messageService.add({ severity: 'error', summary: 'Error', detail: 'Failed to upload image' });
+  }
+
+  removeUploadedFile(file: any): void {
+    const index = this.uploadedFiles.indexOf(file);
+    if (index > -1) {
+      this.uploadedFiles.splice(index, 1);
+    }
+    this.imagePreview = null;
+    this.productForm.patchValue({ imageUrl: null });
   }
 }

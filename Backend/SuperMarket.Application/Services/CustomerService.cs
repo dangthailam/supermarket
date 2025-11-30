@@ -17,10 +17,13 @@ public class CustomerService : ICustomerService
 
     public async Task<CustomerDto> CreateCustomerAsync(CreateCustomerDto dto)
     {
-        // Validate email uniqueness
-        var existingCustomer = await _unitOfWork.Customers.FirstOrDefaultAsync(c => c.Email == dto.Email);
-        if (existingCustomer != null)
-            throw new InvalidOperationException($"Customer with email '{dto.Email}' already exists.");
+        // Validate email uniqueness if provided
+        if (!string.IsNullOrWhiteSpace(dto.Email))
+        {
+            var existingCustomer = await _unitOfWork.Customers.FirstOrDefaultAsync(c => c.Email == dto.Email);
+            if (existingCustomer != null)
+                throw new InvalidOperationException($"Customer with email '{dto.Email}' already exists.");
+        }
 
         // Create address
         var address = new Address(

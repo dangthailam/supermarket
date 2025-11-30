@@ -61,9 +61,6 @@ public class CustomersController : ControllerBase
         if (string.IsNullOrWhiteSpace(dto.Name))
             return BadRequest("Name is required");
 
-        if (string.IsNullOrWhiteSpace(dto.Email))
-            return BadRequest("Email is required");
-
         try
         {
             var customer = await _customerService.CreateCustomerAsync(dto);

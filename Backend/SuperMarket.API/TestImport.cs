@@ -12,10 +12,10 @@ public class TestImport
 {
     public static async Task Main()
     {
-        var connectionString = "Server=(localdb)\\mssqllocaldb;Database=SuperMarketDb;Trusted_Connection=true;TrustServerCertificate=true;";
+        var connectionString = "Host=localhost;Port=5432;Database=SuperMarketDb;Username=postgres;Password=postgres";
 
         var options = new DbContextOptionsBuilder<SuperMarketDbContext>()
-            .UseSqlServer(connectionString)
+            .UseNpgsql(connectionString)
             .Options;
 
         using var context = new SuperMarketDbContext(options);

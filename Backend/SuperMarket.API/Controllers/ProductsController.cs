@@ -10,10 +10,14 @@ namespace SuperMarket.API.Controllers;
 public class ProductsController : ControllerBase
 {
     private readonly IProductService _productService;
+    private readonly Supabase.Client _supabaseClient;
+    private readonly IConfiguration _configuration;
 
-    public ProductsController(IProductService productService)
+    public ProductsController(IProductService productService, Supabase.Client supabaseClient, IConfiguration configuration)
     {
         _productService = productService;
+        _supabaseClient = supabaseClient;
+        _configuration = configuration;
     }
 
     [HttpGet]
@@ -137,24 +141,35 @@ public class ProductsController : ControllerBase
         try
         {
             // Generate unique filename
-            var fileName = $"products/{Guid.NewGuid()}_{DateTime.UtcNow:yyyyMMddHHmmss}_{Path.GetFileName(productImage.FileName)}";
+            var fileExtension = Path.GetExtension(productImage.FileName);
+            var fileName = $"{Guid.NewGuid()}_{DateTime.UtcNow:yyyyMMddHHmmss}{fileExtension}";
             
-            // Save file to blob storage
-            // For now, we'll save to local folder. Replace this with Azure Blob Storage later
-            var uploadsFolder = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "uploads");
-            Directory.CreateDirectory(uploadsFolder);
-            
-            var filePath = Path.Combine(uploadsFolder, fileName);
-            
-            using (var stream = new FileStream(filePath, FileMode.Create))
+            // Read file into byte array
+            byte[] fileBytes;
+            using (var memoryStream = new MemoryStream())
             {
-                await productImage.CopyToAsync(stream);
+                await productImage.CopyToAsync(memoryStream);
+                fileBytes = memoryStream.ToArray();
             }
 
-            // Return the image URL (you'll replace /uploads with your blob storage URL)
-            var imageUrl = $"/uploads/{fileName}";
+            // Get storage bucket name from configuration
+            var bucketName = _configuration.GetSection("Supabase:StorageBucket").Value ?? "product-images";
             
-            return Ok(new { imageUrl });
+            // Upload to Supabase Storage
+            await _supabaseClient.Storage
+                .From(bucketName)
+                .Upload(fileBytes, fileName, new Supabase.Storage.FileOptions
+                {
+                    ContentType = productImage.ContentType,
+                    Upsert = false
+                });
+
+            // Get public URL
+            var publicUrl = _supabaseClient.Storage
+                .From(bucketName)
+                .GetPublicUrl(fileName);
+            
+            return Ok(new { imageUrl = publicUrl });
         }
         catch (Exception ex)
         {

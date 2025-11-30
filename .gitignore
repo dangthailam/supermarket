@@ -518,8 +518,10 @@ Thumbs.db
 # Add any project-specific ignores here
 appsettings.Development.json
 appsettings.Production.json
+appsettings.Local.json
 *.Development.json
 *.Production.json
+*.Local.json
 
 # Excel files (if you don't want to commit them)
 # Uncomment the line below if you want to ignore Excel files

@@ -45,7 +45,7 @@ public class ExcelImportService : IExcelImportService
             await _context.SaveChangesAsync();
         }
 
-        // Cache for categories
+        // Cache for categories (using full path as key)
         var categoryCache = new Dictionary<string, Category>();
 
         for (int row = 2; row <= rowCount; row++) // Skip header row
@@ -80,23 +80,51 @@ public class ExcelImportService : IExcelImportService
                     continue;
                 }
 
-                // Get or create category
+                // Get or create category with hierarchy support
                 Category category;
                 if (!string.IsNullOrWhiteSpace(nhomHang))
                 {
+                    // Check cache first
                     if (!categoryCache.TryGetValue(nhomHang, out category!))
                     {
-                        category = await _context.Categories.FirstOrDefaultAsync(c => c.Name == nhomHang);
-                        if (category == null)
+                        // Parse category hierarchy (e.g., "PersonalCare>>BodyCare>>Suncream")
+                        var categoryNames = nhomHang.Split(new[] { ">>" }, StringSplitOptions.RemoveEmptyEntries)
+                            .Select(c => c.Trim())
+                            .Where(c => !string.IsNullOrWhiteSpace(c))
+                            .ToList();
+
+                        Category? parentCategory = null;
+                        Category? currentCategory = null;
+
+                        // Create or get each category in the hierarchy
+                        for (int i = 0; i < categoryNames.Count; i++)
                         {
-                            category = new Category 
-                            { 
-                                Name = nhomHang, 
-                                Description = $"Auto-created from Excel import"
-                            };
-                            _context.Categories.Add(category);
-                            await _context.SaveChangesAsync();
+                            var categoryName = categoryNames[i];
+                            
+                            // Try to find existing category with the same name and parent
+                            currentCategory = await _context.Categories
+                                .FirstOrDefaultAsync(c => c.Name == categoryName && 
+                                    (parentCategory == null ? c.ParentCategoryId == null : c.ParentCategoryId == parentCategory.Id));
+
+                            if (currentCategory == null)
+                            {
+                                // Create new category
+                                currentCategory = new Category
+                                {
+                                    Name = categoryName,
+                                    Description = $"Auto-created from Excel import",
+                                    ParentCategoryId = parentCategory?.Id
+                                };
+                                _context.Categories.Add(currentCategory);
+                                await _context.SaveChangesAsync();
+                            }
+
+                            // Move to next level
+                            parentCategory = currentCategory;
                         }
+
+                        // The last category in the hierarchy is the one we want
+                        category = currentCategory ?? defaultCategory;
                         categoryCache[nhomHang] = category;
                     }
                 }

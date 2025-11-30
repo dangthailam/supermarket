@@ -200,7 +200,7 @@ public class SuperMarketDbContext : DbContext
             // Unique index on Email with filter for non-null values since Email is nullable
             entity.HasIndex(e => e.Email)
                 .IsUnique()
-                .HasFilter("[Email] IS NOT NULL");
+                .HasFilter("\"Email\" IS NOT NULL");
             entity.HasIndex(e => e.Name);
             entity.HasIndex(e => e.IsActive);
         });

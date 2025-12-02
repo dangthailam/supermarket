@@ -13,6 +13,7 @@ public class SuperMarketDbContext : DbContext
     public DbSet<Brand> Brands { get; set; }
     public DbSet<Category> Categories { get; set; }
     public DbSet<Product> Products { get; set; }
+    public DbSet<ProductBarcode> ProductBarcodes { get; set; }
     public DbSet<Transaction> Transactions { get; set; }
     public DbSet<TransactionItem> TransactionItems { get; set; }
     public DbSet<InventoryMovement> InventoryMovements { get; set; }
@@ -51,7 +52,6 @@ public class SuperMarketDbContext : DbContext
             entity.Property(e => e.SKU).IsRequired().HasMaxLength(50);
             entity.Property(e => e.Name).IsRequired().HasMaxLength(200);
             entity.Property(e => e.Description).HasMaxLength(1000);
-            entity.Property(e => e.Barcode).HasMaxLength(50);
             entity.Property(e => e.Price).HasColumnType("decimal(18,2)");
             entity.Property(e => e.CostPrice).HasColumnType("decimal(18,2)");
             entity.Property(e => e.Weight).HasColumnType("decimal(18,3)");
@@ -60,7 +60,6 @@ public class SuperMarketDbContext : DbContext
             entity.Property(e => e.Location).HasMaxLength(100);
 
             entity.HasIndex(e => e.SKU).IsUnique();
-            entity.HasIndex(e => e.Barcode);
             entity.HasIndex(e => e.Name);
             entity.HasIndex(e => e.CategoryId);
 
@@ -73,6 +72,23 @@ public class SuperMarketDbContext : DbContext
                 .WithMany(b => b.Products)
                 .HasForeignKey(e => e.BrandId)
                 .OnDelete(DeleteBehavior.SetNull);
+        });
+
+        // ProductBarcode configuration
+        modelBuilder.Entity<ProductBarcode>(entity =>
+        {
+            entity.HasKey(e => e.Id);
+            entity.Property(e => e.Barcode).IsRequired().HasMaxLength(100);
+            entity.Property(e => e.IsPrimary).IsRequired();
+
+            // Index for fast barcode lookups
+            entity.HasIndex(e => e.Barcode);
+            entity.HasIndex(e => new { e.ProductId, e.Barcode }).IsUnique();
+
+            entity.HasOne(e => e.Product)
+                .WithMany(p => p.Barcodes)
+                .HasForeignKey(e => e.ProductId)
+                .OnDelete(DeleteBehavior.Cascade);
         });
 
         // Transaction configuration

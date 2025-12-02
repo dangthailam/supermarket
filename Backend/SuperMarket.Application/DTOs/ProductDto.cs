@@ -6,7 +6,7 @@ public class ProductDto
     public string SKU { get; set; } = string.Empty;
     public string Name { get; set; } = string.Empty;
     public string? Description { get; set; }
-    public string? Barcode { get; set; }
+    public List<string> Barcodes { get; set; } = [];
     public decimal Price { get; set; }
     public decimal CostPrice { get; set; }
     public int StockQuantity { get; set; }
@@ -34,7 +34,7 @@ public class CreateProductDto
 {
     public string Name { get; set; } = string.Empty;
     public string? Description { get; set; }
-    public string? Barcode { get; set; }
+    public List<string>? Barcodes { get; set; }
     public decimal Price { get; set; }
     public decimal CostPrice { get; set; }
     public int StockQuantity { get; set; }
@@ -57,7 +57,7 @@ public class UpdateProductDto
 {
     public string? Name { get; set; }
     public string? Description { get; set; }
-    public string? Barcode { get; set; }
+    public List<string>? Barcodes { get; set; }
     public decimal? Price { get; set; }
     public decimal? CostPrice { get; set; }
     public int? MinStockLevel { get; set; }

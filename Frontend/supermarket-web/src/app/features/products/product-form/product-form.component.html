@@ -1,7 +1,7 @@
 <p-card>
   <ng-template pTemplate="header">
     <div class="form-header">
-      <h2>{{ isEditMode ? "Edit Product" : "Create New Product" }}</h2>
+      <h2>{{ isEditMode ? "Chỉnh sửa sản phẩm" : "Tạo sản phẩm mới" }}</h2>
     </div>
   </ng-template>
 
@@ -12,7 +12,7 @@
   @if (loading) {
     <div class="loading-container">
       <p-progressSpinner></p-progressSpinner>
-      <p>Loading...</p>
+      <p>Đang tải...</p>
     </div>
   }
 
@@ -25,7 +25,7 @@
     <div class="form-grid">
       <!-- SKU -->
       <div class="field">
-        <label for="sku">SKU</label>
+        <label for="sku">Mã sản phẩm</label>
         <input
           id="sku"
           type="text"
@@ -34,12 +34,12 @@
           readonly
           class="w-full"
         />
-        <small class="form-hint">Auto-generated</small>
+        <small class="form-hint">Tự động tạo</small>
       </div>
 
       <!-- Name -->
       <div class="field">
-        <label for="name">Product Name <span class="required">*</span></label>
+        <label for="name">Tên sản phẩm <span class="required">*</span></label>
         <input
           id="name"
           type="text"
@@ -54,28 +54,58 @@
         }
       </div>
 
-      <!-- Barcode -->
-      <div class="field">
-        <label for="barcode">Barcode</label>
-        <input
-          id="barcode"
-          type="text"
-          pInputText
-          formControlName="barcode"
-          class="w-full"
-        />
+      <!-- Barcodes -->
+      <div class="field full-width">
+        <label for="barcode">Mã vạch</label>
+        <div class="barcode-input-group" style="display: flex; gap: 0.5rem; margin-bottom: 0.5rem;">
+          <input
+            id="barcode"
+            type="text"
+            pInputText
+            [(ngModel)]="newBarcode"
+            [ngModelOptions]="{standalone: true}"
+            placeholder="Nhập mã vạch"
+            class="flex-1"
+            (keyup.enter)="addBarcode()"
+          />
+          <p-button
+            type="button"
+            icon="pi pi-plus"
+            label="Thêm"
+            (onClick)="addBarcode()"
+          >
+          </p-button>
+        </div>
+        
+        @if (getBarcodes().length > 0) {
+          <div class="barcode-list" style="display: flex; flex-wrap: wrap; gap: 0.5rem;">
+            @for (barcode of getBarcodes(); track barcode) {
+              <div class="barcode-chip" style="display: flex; align-items: center; background: #e3f2fd; padding: 0.25rem 0.5rem; border-radius: 4px;">
+                <span style="margin-right: 0.5rem;">{{ barcode }}</span>
+                <button
+                  type="button"
+                  class="pi pi-times"
+                  (click)="removeBarcode(barcode)"
+                  style="background: none; border: none; cursor: pointer; color: #1976d2; padding: 0;"
+                  title="Xóa mã vạch"
+                >
+                </button>
+              </div>
+            }
+          </div>
+        }
       </div>
 
       <!-- Category -->
       <div class="field">
-        <label for="categoryId">Category <span class="required">*</span></label>
+        <label for="categoryId">Danh mục <span class="required">*</span></label>
         <p-select
           inputId="categoryId"
           [options]="categories"
           formControlName="categoryId"
           optionLabel="name"
           optionValue="id"
-          placeholder="Select Category"
+          placeholder="Chọn danh mục"
           [class.ng-invalid]="isFieldInvalid('categoryId')"
           [class.ng-dirty]="isFieldInvalid('categoryId')"
           styleClass="w-full"
@@ -88,14 +118,14 @@
 
       <!-- Price -->
       <div class="field">
-        <label for="price">Price <span class="required">*</span></label>
+        <label for="price">Giá bán <span class="required">*</span></label>
         <p-inputNumber
           inputId="price"
           formControlName="price"
           mode="currency"
-          currency="USD"
-          locale="en-US"
-          [minFractionDigits]="2"
+          currency="VND"
+          locale="vi-VN"
+          [minFractionDigits]="0"
           [class.ng-invalid]="isFieldInvalid('price')"
           [class.ng-dirty]="isFieldInvalid('price')"
           styleClass="w-full"
@@ -109,15 +139,15 @@
       <!-- Cost Price -->
       <div class="field">
         <label for="costPrice"
-          >Cost Price <span class="required">*</span></label
+          >Giá vốn <span class="required">*</span></label
         >
         <p-inputNumber
           inputId="costPrice"
           formControlName="costPrice"
           mode="currency"
-          currency="USD"
-          locale="en-US"
-          [minFractionDigits]="2"
+          currency="VND"
+          locale="vi-VN"
+          [minFractionDigits]="0"
           [class.ng-invalid]="isFieldInvalid('costPrice')"
           [class.ng-dirty]="isFieldInvalid('costPrice')"
           styleClass="w-full"
@@ -131,7 +161,7 @@
       <!-- Stock Quantity -->
       <div class="field">
         <label for="stockQuantity"
-          >Stock Quantity <span class="required">*</span></label
+          >Số lượng tồn kho <span class="required">*</span></label
         >
         <p-inputNumber
           inputId="stockQuantity"
@@ -143,7 +173,7 @@
         </p-inputNumber>
         @if (isEditMode) {
           <small class="form-hint"
-            >Stock is managed via inventory movements</small
+            >Tồn kho được quản lý qua phiếu nhập xuất</small
           >
         }
         @if (isFieldInvalid("stockQuantity")) {
@@ -154,7 +184,7 @@
       <!-- Min Stock Level -->
       <div class="field">
         <label for="minStockLevel"
-          >Min Stock Level <span class="required">*</span></label
+          >Tồn kho tối thiểu <span class="required">*</span></label
         >
         <p-inputNumber
           inputId="minStockLevel"
@@ -171,7 +201,7 @@
 
       <!-- Description (full width) -->
       <div class="field full-width">
-        <label for="description">Description</label>
+        <label for="description">Mô tả</label>
         <textarea
           id="description"
           pInputTextarea
@@ -183,20 +213,40 @@
 
       <!-- Product Image Upload -->
       <div class="field full-width">
-        <label>Product Image</label>
+        <label>Hình ảnh sản phẩm</label>
+        
+        @if (productForm.get('imageUrl')?.value) {
+          <div class="image-preview-container" style="margin-bottom: 1rem;">
+            <img 
+              [src]="productForm.get('imageUrl')?.value" 
+              alt="Hình sản phẩm"
+              style="max-width: 300px; max-height: 300px; object-fit: contain; border: 1px solid #ddd; border-radius: 4px; padding: 8px;"
+            />
+            <p-button
+              type="button"
+              icon="pi pi-trash"
+              label="Xóa ảnh"
+              severity="danger"
+              [text]="true"
+              (onClick)="removeUploadedFile(null)"
+              [style]="{ 'display': 'block', 'margin-top': '0.5rem' }"
+            >
+            </p-button>
+          </div>
+        }
+        
         <p-fileUpload
-          name="productImage"
-          [url]="uploadUrl"
           [multiple]="false"
           accept="image/*"
           [maxFileSize]="5000000"
           [showUploadButton]="false"
           [showCancelButton]="false"
           (onSelect)="onImageSelect($event)"
-          (onUpload)="onImageUpload($event)"
+          (uploadHandler)="onImageUpload($event)"
           (onError)="onImageUploadError($event)"
+          chooseLabel="Chọn ảnh hoặc chụp ảnh"
           [auto]="true"
-          chooseLabel="Choose Image or Take Photo"
+          [customUpload]="true"
         >
           <ng-template pTemplate="content">
             @if (uploadedFiles.length) {
@@ -232,14 +282,14 @@
             [binary]="true"
           >
           </p-checkbox>
-          <label for="isActive">Active</label>
+          <label for="isActive">Đang hoạt động</label>
         </div>
       }
     </div>
 
     <div class="form-actions">
       <p-button
-        label="Cancel"
+        label="Hủy"
         icon="pi pi-times"
         severity="secondary"
         (onClick)="onCancel()"
@@ -249,10 +299,10 @@
       <p-button
         [label]="
           loading
-            ? 'Saving...'
+            ? 'Đang lưu...'
             : isEditMode
-              ? 'Update Product'
-              : 'Create Product'
+              ? 'Cập nhật sản phẩm'
+              : 'Tạo sản phẩm'
         "
         icon="pi pi-check"
         type="submit"

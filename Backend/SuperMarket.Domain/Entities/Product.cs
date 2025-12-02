@@ -7,7 +7,6 @@ public class Product : Entity
     public string SKU { get; private set; } = string.Empty;
     public string Name { get; private set; } = string.Empty;
     public string? Description { get; private set; }
-    public string? Barcode { get; private set; }
     public decimal Price { get; private set; }
     public decimal CostPrice { get; private set; }
     public int StockQuantity { get; private set; }
@@ -29,6 +28,7 @@ public class Product : Entity
 
     // Navigation properties
     public Category Category { get; private set; } = null!;
+    public ICollection<ProductBarcode> Barcodes { get; private set; } = [];
     public ICollection<TransactionItem> TransactionItems { get; private set; } = [];
     public ICollection<InventoryMovement> InventoryMovements { get; private set; } = [];
 
@@ -53,6 +53,47 @@ public class Product : Entity
         UpdatedAt = DateTime.UtcNow;
     }
 
+    public ProductBarcode? AddBarcode(string barcode, bool isPrimary = false)
+    {
+        if (string.IsNullOrWhiteSpace(barcode))
+            throw new ArgumentException("Barcode cannot be null or empty", nameof(barcode));
+
+        var normalizedBarcode = barcode.Trim();
+        if (Barcodes.Any(b => b.Barcode == normalizedBarcode))
+            return null; // Barcode already exists
+
+        if (isPrimary)
+        {
+            // Unset existing primary barcodes
+            foreach (var existingBarcode in Barcodes.Where(b => b.IsPrimary))
+            {
+                existingBarcode.UnsetPrimary();
+            }
+        }
+
+        var productBarcode = new ProductBarcode(Id, normalizedBarcode, isPrimary);
+        Barcodes.Add(productBarcode);
+        UpdatedAt = DateTime.UtcNow;
+
+        return productBarcode;
+    }
+
+    public ProductBarcode? RemoveBarcode(string barcode)
+    {
+        var barcodeToRemove = Barcodes.FirstOrDefault(b => b.Barcode == barcode.Trim());
+        if (barcodeToRemove != null)
+        {
+            Barcodes.Remove(barcodeToRemove);
+            UpdatedAt = DateTime.UtcNow;
+        }
+        return barcodeToRemove;
+    }
+
+    public string? GetPrimaryBarcode()
+    {
+        return Barcodes.FirstOrDefault(b => b.IsPrimary)?.Barcode ?? Barcodes.FirstOrDefault()?.Barcode;
+    }
+
     public Product(string name, Category category, decimal price, decimal costPrice)
     {
         Name = name;
@@ -64,7 +105,7 @@ public class Product : Entity
 
     public void UpdateDetails(string name, string? description, decimal price, decimal costPrice, int minStockLevel, int? maxStockLevel, bool isActive,
                               string? productType, Brand? brand, string? unit, decimal? weight, string? location,
-                              bool directSalesEnabled, bool pointsEnabled)
+                              bool directSalesEnabled, bool pointsEnabled, string? imageUrl)
     {
         Name = name;
         Description = description;
@@ -81,6 +122,7 @@ public class Product : Entity
         Location = location;
         DirectSalesEnabled = directSalesEnabled;
         PointsEnabled = pointsEnabled;
+        ImageUrl = imageUrl;
         UpdatedAt = DateTime.UtcNow;
     }
 

@@ -1,3 +1,4 @@
+using Microsoft.EntityFrameworkCore;
 using SuperMarket.Application.DTOs;
 using SuperMarket.Application.Interfaces;
 using SuperMarket.Domain.Common;
@@ -73,7 +74,7 @@ public class ProductService : IProductService
             filtered = filtered.Where(p =>
                 p.Name.ToLower().Contains(searchTerm) ||
                 p.SKU.ToLower().Contains(searchTerm) ||
-                (p.Barcode != null && p.Barcode.ToLower().Contains(searchTerm)) ||
+                p.Barcodes.Any(b => b.Barcode.ToLower().Contains(searchTerm)) ||
                 (p.Brand != null && p.Brand.Name.ToLower().Contains(searchTerm))
             );
         }
@@ -124,7 +125,7 @@ public class ProductService : IProductService
 
     public async Task<ProductDto?> GetProductByIdAsync(Guid id)
     {
-        var product = await _unitOfWork.Products.FirstOrDefaultAsync(p => p.Id == id);
+        var product = await _unitOfWork.Set<Product>().Include(p => p.Barcodes).FirstOrDefaultAsync(p => p.Id == id);
         if (product == null) return null;
 
         return await MapToDtoAsync(product);
@@ -132,7 +133,9 @@ public class ProductService : IProductService
 
     public async Task<ProductDto?> GetProductByBarcodeAsync(string barcode)
     {
-        var product = await _unitOfWork.Products.FirstOrDefaultAsync(p => p.Barcode == barcode);
+        var products = await _unitOfWork.Products.FindAsync(p => p.Barcodes.Any(b => b.Barcode == barcode));
+        var product = products.FirstOrDefault();
+            
         if (product == null) return null;
 
         return await MapToDtoAsync(product);
@@ -171,13 +174,25 @@ public class ProductService : IProductService
             dto.Weight,
             dto.Location,
             dto.DirectSalesEnabled,
-            dto.PointsEnabled
+            dto.PointsEnabled,
+            dto.ImageUrl
         );
 
         // Set initial stock
         if (dto.StockQuantity > 0)
         {
             product.UpdateStock(dto.StockQuantity);
+        }
+
+        // Add barcodes
+        if (dto.Barcodes != null && dto.Barcodes.Any())
+        {
+            var firstBarcode = true;
+            foreach (var barcode in dto.Barcodes.Where(b => !string.IsNullOrWhiteSpace(b)))
+            {
+                product.AddBarcode(barcode, firstBarcode);
+                firstBarcode = false;
+            }
         }
 
         await _unitOfWork.Products.AddAsync(product);
@@ -188,7 +203,7 @@ public class ProductService : IProductService
 
     public async Task<ProductDto?> UpdateProductAsync(Guid id, UpdateProductDto dto)
     {
-        var product = await _unitOfWork.Products.FirstOrDefaultAsync(p => p.Id == id);
+        var product = await _unitOfWork.Set<Product>().Include(p => p.Barcodes).FirstOrDefaultAsync(p => p.Id == id);
         if (product == null) return null;
 
         // Get current values to fill in what wasn't updated
@@ -222,8 +237,43 @@ public class ProductService : IProductService
             weight,
             location,
             directSalesEnabled,
-            pointsEnabled
+            pointsEnabled,
+            dto.ImageUrl
         );
+
+        // Update barcodes if provided
+        if (dto.Barcodes != null)
+        {
+            // Get current barcodes
+            var currentBarcodes = product.Barcodes.Select(b => b.Barcode).ToList();
+            var newBarcodes = dto.Barcodes.Where(b => !string.IsNullOrWhiteSpace(b)).ToList();
+
+            // Remove barcodes that are not in the new list
+            foreach (var currentBarcode in currentBarcodes)
+            {
+                if (!newBarcodes.Contains(currentBarcode))
+                {
+                    var removedBarcode = product.RemoveBarcode(currentBarcode);
+                    if (removedBarcode != null) {
+                        _unitOfWork.Set<ProductBarcode>().Remove(removedBarcode);
+                    }
+                }
+            }
+
+            // Add new barcodes
+            var firstBarcode = !product.Barcodes.Any();
+            foreach (var barcode in newBarcodes)
+            {
+                if (!currentBarcodes.Contains(barcode))
+                {
+                    var productBarcode = product.AddBarcode(barcode, firstBarcode);
+                    if (productBarcode != null) {
+                        await _unitOfWork.Set<ProductBarcode>().AddAsync(productBarcode);
+                    }
+                    firstBarcode = false;
+                }
+            }
+        }
 
         _unitOfWork.Products.Update(product);
         await _unitOfWork.SaveChangesAsync();
@@ -251,7 +301,8 @@ public class ProductService : IProductService
             product.Weight,
             product.Location,
             product.DirectSalesEnabled,
-            product.PointsEnabled
+            product.PointsEnabled,
+            product.ImageUrl
         );
 
         _unitOfWork.Products.Update(product);
@@ -266,7 +317,7 @@ public class ProductService : IProductService
             p.IsActive && (
                 p.Name.Contains(searchTerm) ||
                 p.SKU.Contains(searchTerm) ||
-                (p.Barcode != null && p.Barcode.Contains(searchTerm))
+                p.Barcodes.Any(b => b.Barcode.Contains(searchTerm))
             )
         );
 
@@ -283,7 +334,11 @@ public class ProductService : IProductService
             SKU = product.SKU,
             Name = product.Name,
             Description = product.Description,
-            Barcode = product.Barcode,
+            Barcodes = product.Barcodes
+                .OrderByDescending(b => b.IsPrimary)
+                .ThenBy(b => b.CreatedAt)
+                .Select(b => b.Barcode)
+                .ToList(),
             Price = product.Price,
             CostPrice = product.CostPrice,
             StockQuantity = product.StockQuantity,
@@ -323,7 +378,11 @@ public class ProductService : IProductService
             SKU = product.SKU,
             Name = product.Name,
             Description = product.Description,
-            Barcode = product.Barcode,
+            Barcodes = product.Barcodes
+                .OrderByDescending(b => b.IsPrimary)
+                .ThenBy(b => b.CreatedAt)
+                .Select(b => b.Barcode)
+                .ToList(),
             Price = product.Price,
             CostPrice = product.CostPrice,
             StockQuantity = product.StockQuantity,

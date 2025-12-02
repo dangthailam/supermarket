@@ -153,7 +153,8 @@ public class ExcelImportService : IExcelImportService
                         trongLuong,
                         viTri,
                         duocBanTrucTiep == 1,
-                        tichDiem == 1
+                        tichDiem == 1,
+                        hinhAnh
                     );
 
                     // Update stock if changed
@@ -195,7 +196,8 @@ public class ExcelImportService : IExcelImportService
                         trongLuong,
                         viTri,
                         duocBanTrucTiep == 1,
-                        tichDiem == 1
+                        tichDiem == 1,
+                        hinhAnh
                     );
 
                     // Set initial stock

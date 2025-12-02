@@ -1,5 +1,6 @@
 using System.Linq.Expressions;
 using SuperMarket.Domain.Common;
+using SuperMarket.Domain.Entities;
 
 namespace SuperMarket.Application.Interfaces;
 

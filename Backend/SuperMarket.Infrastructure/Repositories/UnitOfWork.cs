@@ -1,4 +1,5 @@
 
+using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Storage;
 using SuperMarket.Application.Interfaces;
 using SuperMarket.Domain.Entities;
@@ -33,6 +34,11 @@ public class UnitOfWork : IUnitOfWork
         Providers = new Repository<Provider>(context);
         Brands = new Repository<Brand>(context);
         Customers = new Repository<Customer>(context);
+    }
+
+    public DbSet<T> Set<T>() where T : class
+    {
+        return _context.Set<T>();
     }
 
     public async Task<int> SaveChangesAsync()

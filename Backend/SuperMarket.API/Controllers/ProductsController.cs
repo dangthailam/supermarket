@@ -124,7 +124,7 @@ public class ProductsController : ControllerBase
     }
 
     [HttpPost("upload-image")]
-    public async Task<ActionResult<object>> UploadProductImage(IFormFile productImage)
+    public async Task<ActionResult> UploadProductImage(IFormFile productImage)
     {
         if (productImage == null || productImage.Length == 0)
             return BadRequest(new { message = "No file provided" });
@@ -140,9 +140,8 @@ public class ProductsController : ControllerBase
 
         try
         {
-            // Generate unique filename
+            // Generate filename based on file content hash to prevent duplicates
             var fileExtension = Path.GetExtension(productImage.FileName);
-            var fileName = $"{Guid.NewGuid()}_{DateTime.UtcNow:yyyyMMddHHmmss}{fileExtension}";
             
             // Read file into byte array
             byte[] fileBytes;
@@ -152,16 +151,22 @@ public class ProductsController : ControllerBase
                 fileBytes = memoryStream.ToArray();
             }
 
+            // Generate hash from file content - same file = same hash = no duplicate
+            using var sha256 = System.Security.Cryptography.SHA256.Create();
+            var hashBytes = sha256.ComputeHash(fileBytes);
+            var fileHash = BitConverter.ToString(hashBytes).Replace("-", "").ToLower().Substring(0, 16);
+            var fileName = $"{fileHash}{fileExtension}";
+
             // Get storage bucket name from configuration
             var bucketName = _configuration.GetSection("Supabase:StorageBucket").Value ?? "product-images";
             
-            // Upload to Supabase Storage
+            // Upload to Supabase Storage with Upsert=true to replace if exists
             await _supabaseClient.Storage
                 .From(bucketName)
                 .Upload(fileBytes, fileName, new Supabase.Storage.FileOptions
                 {
                     ContentType = productImage.ContentType,
-                    Upsert = false
+                    Upsert = true
                 });
 
             // Get public URL

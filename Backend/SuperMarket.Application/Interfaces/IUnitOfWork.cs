@@ -1,3 +1,4 @@
+using Microsoft.EntityFrameworkCore;
 using SuperMarket.Domain.Entities;
 
 namespace SuperMarket.Application.Interfaces;
@@ -13,6 +14,8 @@ public interface IUnitOfWork : IDisposable
     IRepository<User> Users { get; }
     IRepository<Provider> Providers { get; }
     IRepository<Customer> Customers { get; }
+
+    DbSet<T> Set<T>() where T : class;
 
     Task<int> SaveChangesAsync();
     Task BeginTransactionAsync();

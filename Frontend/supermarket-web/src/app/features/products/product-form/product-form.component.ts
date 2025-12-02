@@ -1,6 +1,6 @@
 import { Component, inject, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angular/forms';
+import { FormBuilder, FormGroup, Validators, ReactiveFormsModule, FormsModule } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
 import { SuperMarketApiClient, ProductDto, CreateProductDto, UpdateProductDto, CategoryDto, API_BASE_URL } from '../../../core/api/api-client';
 import { Card } from 'primeng/card';
@@ -12,14 +12,16 @@ import { Checkbox } from 'primeng/checkbox';
 import { Button } from 'primeng/button';
 import { Message } from 'primeng/message';
 import { ProgressSpinner } from 'primeng/progressspinner';
-import { FileUpload, FileUploadEvent } from 'primeng/fileupload';
+import { FileUpload, FileUploadEvent, FileUploadHandlerEvent } from 'primeng/fileupload';
 import { MessageService } from 'primeng/api';
+import { HttpClient } from '@angular/common/http';
 
 @Component({
     selector: 'app-product-form',
     imports: [
         CommonModule,
         ReactiveFormsModule,
+        FormsModule,
         Card,
         InputText,
         Textarea,
@@ -44,6 +46,7 @@ export class ProductFormComponent implements OnInit {
   categories: CategoryDto[] = [];
   uploadedFiles: any[] = [];
   imagePreview: string | null = null;
+  newBarcode: string = '';
   private apiBaseUrl = inject(API_BASE_URL);
   uploadUrl = `${this.apiBaseUrl}/api/products/upload-image`;
 
@@ -52,7 +55,8 @@ export class ProductFormComponent implements OnInit {
     private apiClient: SuperMarketApiClient,
     private route: ActivatedRoute,
     private router: Router,
-    private messageService: MessageService
+    private messageService: MessageService,
+    private httpClient: HttpClient
   ) {
     this.initForm();
   }
@@ -85,7 +89,7 @@ export class ProductFormComponent implements OnInit {
       sku: ['', [Validators.required, Validators.maxLength(50)]],
       name: ['', [Validators.required, Validators.maxLength(200)]],
       description: ['', Validators.maxLength(1000)],
-      barcode: ['', Validators.maxLength(100)],
+      barcodes: [[] as string[]],
       price: [0, [Validators.required, Validators.min(0)]],
       costPrice: [0, [Validators.required, Validators.min(0)]],
       stockQuantity: [0, [Validators.required, Validators.min(0)]],
@@ -106,7 +110,7 @@ export class ProductFormComponent implements OnInit {
           sku: product.sku,
           name: product.name,
           description: product.description,
-          barcode: product.barcode,
+          barcodes: product.barcodes || [],
           price: product.price,
           costPrice: product.costPrice,
           stockQuantity: product.stockQuantity,
@@ -141,7 +145,7 @@ export class ProductFormComponent implements OnInit {
       const updateData: UpdateProductDto = {
         name: this.productForm.value.name,
         description: this.productForm.value.description,
-        barcode: this.productForm.value.barcode,
+        barcodes: this.productForm.value.barcodes,
         price: this.productForm.value.price,
         costPrice: this.productForm.value.costPrice,
         minStockLevel: this.productForm.value.minStockLevel,
@@ -217,30 +221,23 @@ export class ProductFormComponent implements OnInit {
     }
   }
 
-  onImageUpload(event: any): void {
+  onImageUpload(event: FileUploadHandlerEvent): void {
     console.log('Image uploaded:', event);
     const files = event.files;
     if (files && files.length > 0) {
       const formData = new FormData();
-      formData.append('file', files[0]);
-
-      this.loading = true;
+      formData.append('productImage', files[0]);
       // Call the backend upload endpoint
-      fetch('/api/products/upload-image', {
-        method: 'POST',
-        body: formData
-      })
-      .then(response => response.json())
-      .then((data: any) => {
-        // Set the returned image URL in the form
-        this.productForm.patchValue({ imageUrl: data.imageUrl });
-        this.messageService.add({ severity: 'success', summary: 'Success', detail: 'Image uploaded successfully' });
-        this.loading = false;
-      })
-      .catch(err => {
-        this.error = 'Failed to upload image';
-        this.messageService.add({ severity: 'error', summary: 'Error', detail: 'Failed to upload image' });
-        this.loading = false;
+      this.httpClient.post(this.uploadUrl, formData).subscribe({
+        next: (data: any) => {
+          // Set the returned image URL in the form
+          this.productForm.patchValue({ imageUrl: data.imageUrl });
+          this.messageService.add({ severity: 'success', summary: 'Success', detail: 'Image uploaded successfully' });
+        },
+        error: (err) => {
+          this.error = 'Failed to upload image';
+          this.messageService.add({ severity: 'error', summary: 'Error', detail: 'Failed to upload image' });
+        }
       });
     }
   }
@@ -256,5 +253,38 @@ export class ProductFormComponent implements OnInit {
     }
     this.imagePreview = null;
     this.productForm.patchValue({ imageUrl: null });
+  }
+
+  addBarcode(): void {
+    if (!this.newBarcode || this.newBarcode.trim() === '') return;
+    
+    const barcodes = this.productForm.get('barcodes')?.value || [];
+    const trimmedBarcode = this.newBarcode.trim();
+    
+    // Check for duplicates
+    if (barcodes.includes(trimmedBarcode)) {
+      this.messageService.add({ 
+        severity: 'warn', 
+        summary: 'Cảnh báo', 
+        detail: 'Mã vạch này đã tồn tại' 
+      });
+      return;
+    }
+    
+    this.productForm.patchValue({ 
+      barcodes: [...barcodes, trimmedBarcode] 
+    });
+    this.newBarcode = '';
+  }
+
+  removeBarcode(barcode: string): void {
+    const barcodes = this.productForm.get('barcodes')?.value || [];
+    this.productForm.patchValue({ 
+      barcodes: barcodes.filter((b: string) => b !== barcode) 
+    });
+  }
+
+  getBarcodes(): string[] {
+    return this.productForm.get('barcodes')?.value || [];
   }
 }

@@ -31,6 +31,7 @@ public class Product : Entity
     public ICollection<ProductBarcode> Barcodes { get; private set; } = [];
     public ICollection<TransactionItem> TransactionItems { get; private set; } = [];
     public ICollection<InventoryMovement> InventoryMovements { get; private set; } = [];
+    public ICollection<PurchaseItem> PurchaseItems { get; private set; } = [];
 
     // Parameterless constructor for EF Core
     private Product()

@@ -28,6 +28,10 @@ export const routes: Routes = [
         loadChildren: () => import('./features/customers/customers.routes').then(m => m.CUSTOMERS_ROUTES)
       },
       {
+        path: 'purchases',
+        loadChildren: () => import('./features/purchases/purchases.routes').then(m => m.PURCHASES_ROUTES)
+      },
+      {
         path: 'more',
         loadComponent: () => import('./features/more/more.component').then(m => m.MoreComponent)
       }

@@ -13,8 +13,9 @@ public class Provider : Entity
     public string? Note { get; private set; }
     public string? CompanyName { get; private set; }
     public string? TaxNumber { get; private set; }
+    
+    public ICollection<Purchase> Purchases { get; private set; } = [];
 
-    // Parameterless constructor for EF Core
     private Provider()
     {
     }

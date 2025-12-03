@@ -20,6 +20,8 @@ public class SuperMarketDbContext : DbContext
     public DbSet<User> Users { get; set; }
     public DbSet<Provider> Providers { get; set; }
     public DbSet<Customer> Customers { get; set; }
+    public DbSet<Purchase> Purchases { get; set; }
+    public DbSet<PurchaseItem> PurchaseItems { get; set; }
 
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
     {
@@ -219,6 +221,38 @@ public class SuperMarketDbContext : DbContext
                 .HasFilter("\"Email\" IS NOT NULL");
             entity.HasIndex(e => e.Name);
             entity.HasIndex(e => e.IsActive);
+        });
+
+        // Purchase configuration
+        modelBuilder.Entity<Purchase>(entity =>
+        {
+            entity.HasKey(e => e.Id);
+            entity.Property(e => e.Code).IsRequired().HasMaxLength(50);
+            entity.Property(e => e.Note).HasMaxLength(500);
+
+            entity.HasIndex(e => e.Code).IsUnique();
+            entity.HasIndex(e => e.PurchaseDate);
+            entity.HasIndex(e => e.ProviderId);
+            entity.HasIndex(e => e.Status);
+
+            entity.HasOne(e => e.Provider)
+                .WithMany(p => p.Purchases)
+                .HasForeignKey(e => e.ProviderId)
+                .OnDelete(DeleteBehavior.Restrict);
+        });
+
+        // PurchaseItem configuration
+        modelBuilder.Entity<PurchaseItem>(entity =>
+        {
+            entity.HasKey(e => e.Id);
+            entity.Property(e => e.PurchasePrice).HasColumnType("decimal(18,2)");
+            entity.Property(e => e.Discount).HasColumnType("decimal(18,2)");
+            entity.Property(e => e.Note).HasMaxLength(500);
+
+            entity.HasOne(e => e.Product)
+                .WithMany(p => p.PurchaseItems)
+                .HasForeignKey(e => e.ProductId)
+                .OnDelete(DeleteBehavior.Restrict);
         });
     }
 }

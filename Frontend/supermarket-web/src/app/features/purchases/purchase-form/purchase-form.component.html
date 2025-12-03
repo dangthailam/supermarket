@@ -1,0 +1,234 @@
+<p-toast></p-toast>
+
+<p-card>
+  <ng-template pTemplate="header">
+    <div class="form-header">
+      <h2>{{ isEditMode ? "Chỉnh sửa phiếu nhập" : "Tạo phiếu nhập mới" }}</h2>
+    </div>
+  </ng-template>
+
+  @if (error) {
+    <p-message severity="error" [text]="error" class="mb-3"></p-message>
+  }
+
+  @if (loading) {
+    <div class="loading-container">
+      <p-progressSpinner></p-progressSpinner>
+      <p>Đang tải...</p>
+    </div>
+  }
+
+  <form
+    [formGroup]="purchaseForm"
+    (ngSubmit)="onSubmit()"
+    class="purchase-form"
+    *ngIf="!loading"
+  >
+    <div class="form-grid">
+      <!-- Purchase Date -->
+      <div class="field">
+        <label for="purchaseDate">Ngày nhập <span class="required">*</span></label>
+        <p-datePicker
+          inputId="purchaseDate"
+          formControlName="purchaseDate"
+          dateFormat="dd/mm/yy"
+          [showIcon]="true"
+          [class.ng-invalid]="isFieldInvalid('purchaseDate')"
+          [class.ng-dirty]="isFieldInvalid('purchaseDate')"
+          class="w-full"
+        >
+        </p-datePicker>
+      </div>
+
+      <!-- Provider -->
+      <div class="field">
+        <label for="providerId">Nhà cung cấp <span class="required">*</span></label>
+        <p-select
+          inputId="providerId"
+          [options]="providers"
+          formControlName="providerId"
+          optionLabel="name"
+          optionValue="id"
+          placeholder="Chọn nhà cung cấp"
+          [class.ng-invalid]="isFieldInvalid('providerId')"
+          [class.ng-dirty]="isFieldInvalid('providerId')"
+          class="w-full"
+          [filter]="true"
+        >
+        </p-select>
+      </div>
+
+      <!-- Status -->
+      <div class="field">
+        <label for="status">Trạng thái <span class="required">*</span></label>
+        <p-select
+          inputId="status"
+          [options]="statusOptions"
+          formControlName="status"
+          optionLabel="label"
+          optionValue="value"
+          placeholder="Chọn trạng thái"
+          class="w-full"
+        >
+        </p-select>
+      </div>
+
+      <!-- Note -->
+      <div class="field full-width">
+        <label for="note">Ghi chú</label>
+        <textarea
+          id="note"
+          pInputTextarea
+          formControlName="note"
+          rows="2"
+          class="w-full"
+        ></textarea>
+      </div>
+    </div>
+
+    <!-- Purchase Items -->
+    <div class="items-section">
+      <div class="section-header">
+        <h3>Danh sách sản phẩm</h3>
+        <p-button
+          type="button"
+          label="Thêm sản phẩm"
+          icon="pi pi-plus"
+          (onClick)="addItem()"
+        ></p-button>
+      </div>
+
+      <div formArrayName="items" class="items-list">
+        @for (item of items.controls; track $index; let i = $index) {
+          <div [formGroupName]="i" class="item-row">
+            <div class="item-fields">
+              <!-- Product -->
+              <div class="field flex-2">
+                <label>Sản phẩm <span class="required">*</span></label>
+                <p-select
+                  [options]="products"
+                  formControlName="productId"
+                  optionLabel="name"
+                  optionValue="id"
+                  placeholder="Chọn sản phẩm"
+                  class="w-full"
+                  [filter]="true"
+                >
+                </p-select>
+              </div>
+
+              <!-- Quantity -->
+              <div class="field">
+                <label>Số lượng <span class="required">*</span></label>
+                <p-inputNumber
+                  formControlName="quantity"
+                  [min]="1"
+                  [showButtons]="true"
+                  class="w-full"
+                >
+                </p-inputNumber>
+              </div>
+
+              <!-- Purchase Price -->
+              <div class="field">
+                <label>Giá nhập <span class="required">*</span></label>
+                <p-inputNumber
+                  formControlName="purchasePrice"
+                  mode="currency"
+                  currency="VND"
+                  locale="vi-VN"
+                  [minFractionDigits]="0"
+                  class="w-full"
+                >
+                </p-inputNumber>
+              </div>
+
+              <!-- Discount -->
+              <div class="field">
+                <label>Chiết khấu</label>
+                <p-inputNumber
+                  formControlName="discount"
+                  mode="currency"
+                  currency="VND"
+                  locale="vi-VN"
+                  [minFractionDigits]="0"
+                  class="w-full"
+                >
+                </p-inputNumber>
+              </div>
+
+              <!-- Total -->
+              <div class="field">
+                <label>Thành tiền</label>
+                <input
+                  type="text"
+                  pInputText
+                  [value]="formatCurrency(getItemTotal(i))"
+                  readonly
+                  class="w-full"
+                />
+              </div>
+
+              <!-- Remove Button -->
+              <div class="field field-button">
+                <label>&nbsp;</label>
+                <p-button
+                  type="button"
+                  icon="pi pi-trash"
+                  severity="danger"
+                  [text]="true"
+                  (onClick)="removeItem(i)"
+                  pTooltip="Xóa"
+                ></p-button>
+              </div>
+            </div>
+
+            <!-- Item Note -->
+            <div class="field full-width">
+              <textarea
+                pInputTextarea
+                formControlName="note"
+                placeholder="Ghi chú cho sản phẩm này"
+                rows="1"
+                class="w-full"
+              ></textarea>
+            </div>
+          </div>
+        }
+
+        @if (items.length === 0) {
+          <div class="empty-message">
+            Chưa có sản phẩm nào. Nhấn "Thêm sản phẩm" để bắt đầu.
+          </div>
+        }
+      </div>
+
+      <!-- Total Amount -->
+      @if (items.length > 0) {
+        <div class="total-section">
+          <strong>Tổng tiền:</strong>
+          <span class="total-amount">{{ formatCurrency(getTotalAmount()) }}</span>
+        </div>
+      }
+    </div>
+
+    <div class="form-actions">
+      <p-button
+        label="Hủy"
+        icon="pi pi-times"
+        severity="secondary"
+        (onClick)="onCancel()"
+        [disabled]="loading"
+      >
+      </p-button>
+      <p-button
+        [label]="loading ? 'Đang lưu...' : isEditMode ? 'Cập nhật' : 'Tạo phiếu nhập'"
+        icon="pi pi-check"
+        type="submit"
+        [disabled]="loading"
+        [loading]="loading"
+      >
+      </p-button>
+    </div>
+  </form>
+</p-card>

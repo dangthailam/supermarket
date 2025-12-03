@@ -1,0 +1,96 @@
+<p-toast></p-toast>
+<p-confirmDialog></p-confirmDialog>
+
+<p-card>
+  <ng-template pTemplate="header">
+    <div class="card-header">
+      <h2>Quản lý phiếu nhập hàng</h2>
+      <p-button
+        label="Tạo phiếu nhập mới"
+        icon="pi pi-plus"
+        (onClick)="onCreateNew()"
+      ></p-button>
+    </div>
+  </ng-template>
+
+  @if (error) {
+    <div class="error-message">
+      <i class="pi pi-exclamation-circle"></i>
+      <span>{{ error }}</span>
+    </div>
+  }
+
+  <p-table
+    [value]="purchases"
+    [loading]="loading"
+    [paginator]="true"
+    [rows]="10"
+    [rowsPerPageOptions]="[10, 25, 50]"
+    [showCurrentPageReport]="true"
+    currentPageReportTemplate="Hiển thị {first} đến {last} trong tổng số {totalRecords} phiếu"
+    styleClass="p-datatable-gridlines"
+  >
+    <ng-template pTemplate="header">
+      <tr>
+        <th>Mã phiếu</th>
+        <th>Ngày nhập</th>
+        <th>Nhà cung cấp</th>
+        <th>Tổng tiền</th>
+        <th>Trạng thái</th>
+        <th style="width: 200px">Thao tác</th>
+      </tr>
+    </ng-template>
+    <ng-template pTemplate="body" let-purchase>
+      <tr>
+        <td>{{ purchase.code }}</td>
+        <td>{{ formatDate(purchase.purchaseDate) }}</td>
+        <td>
+          <div class="provider-info">
+            <strong>{{ purchase.providerName }}</strong>
+            <small>{{ purchase.providerCode }}</small>
+          </div>
+        </td>
+        <td class="text-right">{{ formatCurrency(purchase.totalAmount) }}</td>
+        <td>
+          <p-tag
+            [value]="getStatusText(purchase.status)"
+            [severity]="getStatusSeverity(purchase.status)"
+          ></p-tag>
+        </td>
+        <td>
+          <div class="action-buttons">
+            <p-button
+              icon="pi pi-eye"
+              [rounded]="true"
+              [text]="true"
+              severity="info"
+              (onClick)="onView(purchase.id)"
+              pTooltip="Xem chi tiết"
+            ></p-button>
+            <p-button
+              icon="pi pi-pencil"
+              [rounded]="true"
+              [text]="true"
+              severity="success"
+              (onClick)="onEdit(purchase.id)"
+              pTooltip="Chỉnh sửa"
+            ></p-button>
+            <p-button
+              icon="pi pi-trash"
+              [rounded]="true"
+              [text]="true"
+              severity="danger"
+              (onClick)="onDelete(purchase)"
+              pTooltip="Xóa"
+            ></p-button>
+          </div>
+        </td>
+      </tr>
+    </ng-template>
+    <ng-template pTemplate="emptymessage">
+      <tr>
+        <td colspan="6" class="text-center">Không có phiếu nhập nào</td>
+      </tr>
+    </ng-template>
+  </p-table>
+</p-card>

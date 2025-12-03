@@ -21,6 +21,8 @@ public class UnitOfWork : IUnitOfWork
     public IRepository<User> Users { get; }
     public IRepository<Provider> Providers { get; }
     public IRepository<Customer> Customers { get; }
+    public IRepository<Purchase> Purchases { get; }
+    public IRepository<PurchaseItem> PurchaseItems { get; }
 
     public UnitOfWork(SuperMarketDbContext context)
     {
@@ -34,6 +36,8 @@ public class UnitOfWork : IUnitOfWork
         Providers = new Repository<Provider>(context);
         Brands = new Repository<Brand>(context);
         Customers = new Repository<Customer>(context);
+        Purchases = new Repository<Purchase>(context);
+        PurchaseItems = new Repository<PurchaseItem>(context);
     }
 
     public DbSet<T> Set<T>() where T : class

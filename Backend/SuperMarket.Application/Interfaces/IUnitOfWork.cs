@@ -14,6 +14,8 @@ public interface IUnitOfWork : IDisposable
     IRepository<User> Users { get; }
     IRepository<Provider> Providers { get; }
     IRepository<Customer> Customers { get; }
+    IRepository<Purchase> Purchases { get; }
+    IRepository<PurchaseItem> PurchaseItems { get; }
 
     DbSet<T> Set<T>() where T : class;
 

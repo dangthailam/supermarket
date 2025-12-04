@@ -9,7 +9,7 @@ COPY Backend/SuperMarket.Infrastructure/SuperMarket.Infrastructure.csproj SuperM
 COPY Backend/SuperMarket.API/SuperMarket.API.csproj SuperMarket.API/
 
 # Restore dependencies
-RUN dotnet restore Backend/SuperMarket.API/SuperMarket.API.csproj
+RUN dotnet restore SuperMarket.API/SuperMarket.API.csproj
 
 # Copy all source code
 COPY . .

@@ -3,10 +3,10 @@ FROM mcr.microsoft.com/dotnet/sdk:9.0 AS build
 WORKDIR /src
 
 # Copy project files
-COPY SuperMarket.Domain/SuperMarket.Domain.csproj SuperMarket.Domain/
-COPY SuperMarket.Application/SuperMarket.Application.csproj SuperMarket.Application/
-COPY SuperMarket.Infrastructure/SuperMarket.Infrastructure.csproj SuperMarket.Infrastructure/
-COPY SuperMarket.API/SuperMarket.API.csproj SuperMarket.API/
+COPY Backend/SuperMarket.Domain/SuperMarket.Domain.csproj SuperMarket.Domain/
+COPY Backend/SuperMarket.Application/SuperMarket.Application.csproj SuperMarket.Application/
+COPY Backend/SuperMarket.Infrastructure/SuperMarket.Infrastructure.csproj SuperMarket.Infrastructure/
+COPY Backend/SuperMarket.API/SuperMarket.API.csproj SuperMarket.API/
 
 # Restore dependencies
 RUN dotnet restore SuperMarket.API/SuperMarket.API.csproj

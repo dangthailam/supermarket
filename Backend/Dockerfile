@@ -11,8 +11,8 @@ COPY Backend/SuperMarket.API/SuperMarket.API.csproj SuperMarket.API/
 # Restore dependencies
 RUN dotnet restore SuperMarket.API/SuperMarket.API.csproj
 
-# Copy all source code
-COPY . .
+# Copy all Backend source code
+COPY Backend/ .
 
 # Build and publish
 RUN dotnet publish SuperMarket.API/SuperMarket.API.csproj -c Release -o /app/publish --no-restore

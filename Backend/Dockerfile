@@ -15,7 +15,7 @@ RUN dotnet restore SuperMarket.API/SuperMarket.API.csproj
 COPY Backend/ .
 
 # Build and publish
-RUN dotnet publish SuperMarket.API/SuperMarket.API.csproj -c Release -o /app/publish --no-restore
+RUN dotnet publish SuperMarket.API/SuperMarket.API.csproj -c Release -o /app/publish
 
 # Runtime stage
 FROM mcr.microsoft.com/dotnet/aspnet:9.0

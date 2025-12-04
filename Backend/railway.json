@@ -3,7 +3,7 @@
   "build": {
     "builder": "DOCKERFILE",
     "buildCommand": "dotnet publish SuperMarket.API/SuperMarket.API.csproj -c Release -o out --no-restore",
-    "dockerfilePath": "Dockerfile"
+    "dockerfilePath": "/Backend/Dockerfile"
   },
   "deploy": {
     "runtime": "V2",

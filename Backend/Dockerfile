@@ -3,10 +3,10 @@ FROM mcr.microsoft.com/dotnet/sdk:9.0 AS build
 WORKDIR /src
 
 # Copy project files
-COPY Backend/SuperMarket.Domain/SuperMarket.Domain.csproj SuperMarket.Domain/
-COPY Backend/SuperMarket.Application/SuperMarket.Application.csproj SuperMarket.Application/
-COPY Backend/SuperMarket.Infrastructure/SuperMarket.Infrastructure.csproj SuperMarket.Infrastructure/
-COPY Backend/SuperMarket.API/SuperMarket.API.csproj SuperMarket.API/
+COPY SuperMarket.Domain/SuperMarket.Domain.csproj SuperMarket.Domain/
+COPY SuperMarket.Application/SuperMarket.Application.csproj SuperMarket.Application/
+COPY SuperMarket.Infrastructure/SuperMarket.Infrastructure.csproj SuperMarket.Infrastructure/
+COPY SuperMarket.API/SuperMarket.API.csproj SuperMarket.API/
 
 # Restore dependencies
 RUN dotnet restore SuperMarket.API/SuperMarket.API.csproj
@@ -15,8 +15,7 @@ RUN dotnet restore SuperMarket.API/SuperMarket.API.csproj
 COPY . .
 
 # Build and publish
-WORKDIR /src/SuperMarket.API
-RUN dotnet publish -c Release -o /app/publish --no-restore
+RUN dotnet publish SuperMarket.API/SuperMarket.API.csproj -c Release -o /app/publish --no-restore
 
 # Runtime stage
 FROM mcr.microsoft.com/dotnet/aspnet:9.0

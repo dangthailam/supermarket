@@ -5,6 +5,7 @@ import { provideAnimations } from '@angular/platform-browser/animations';
 import { providePrimeNG } from 'primeng/config';
 import Aura from '@primeng/themes/aura';
 import { API_BASE_URL } from './core/api/api-client';
+import { environment } from '../environments/environment';
 
 import { routes } from './app.routes';
 
@@ -19,6 +20,6 @@ export const appConfig: ApplicationConfig = {
         preset: Aura
       }
     }),
-    { provide: API_BASE_URL, useValue: 'https://localhost:7268' }
+    { provide: API_BASE_URL, useValue: environment.apiUrl }
   ]
 };

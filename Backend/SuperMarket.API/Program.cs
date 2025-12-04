@@ -50,7 +50,10 @@ public class Program
                 options.AddPolicy("AllowAngularApp",
                     policy =>
                     {
-                        policy.WithOrigins("http://localhost:4222")
+                        var allowedOrigins = builder.Configuration.GetSection("AllowedOrigins").Get<string[]>() 
+                            ?? new[] { "http://localhost:4222" };
+                        
+                        policy.WithOrigins(allowedOrigins)
                               .AllowAnyHeader()
                               .AllowAnyMethod();
                     });

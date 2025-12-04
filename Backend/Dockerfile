@@ -15,7 +15,7 @@ RUN dotnet restore SuperMarket.API/SuperMarket.API.csproj
 COPY . .
 
 # Build and publish
-WORKDIR /src/Backend/SuperMarket.API
+WORKDIR /src/SuperMarket.API
 RUN dotnet publish -c Release -o /app/publish --no-restore
 
 # Runtime stage

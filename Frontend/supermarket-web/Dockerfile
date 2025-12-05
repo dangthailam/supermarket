@@ -26,10 +26,14 @@ RUN npm run build
 # Production stage
 FROM nginx:alpine
 
+# Copy nginx template
+COPY nginx.conf.template /etc/nginx/templates/default.conf.template
+
 # Copy built app
 COPY --from=build /app/dist/supermarket-web/browser /usr/share/nginx/html
 
-# Expose port
-EXPOSE 80
+# Railway uses PORT env variable
+ENV PORT=8081
+EXPOSE $PORT
 
-CMD ["nginx", "-g", "daemon off;"]
+CMD ["sh", "-c", "envsubst '$PORT' < /etc/nginx/templates/default.conf.template > /etc/nginx/conf.d/default.conf && nginx -g 'daemon off;'"]

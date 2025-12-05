@@ -1,4 +1,4 @@
 export const environment = {
   production: true,
-  apiUrl: '__API_URL_PLACEHOLDER__'
+  apiUrl: '${API_URL}'
 };

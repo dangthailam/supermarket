@@ -1,35 +1,35 @@
 # Build stage
-FROM node:20-alpine AS build
+FROM node:lts-alpine AS build
+
+ARG API_URL
+ENV API_URL=${API_URL}
 
 WORKDIR /app
 
 # Copy package files
 COPY package*.json ./
 
-# Install dependencies
+# Install packages
 RUN npm ci
 
 # Copy source code
-COPY . .
+COPY . ./
 
-# Build the application
+# Replace API_URL placeholder before build
+RUN if [ -n "$API_URL" ]; then \
+      find src/environments -name "*.ts" -exec sed -i "s|\${API_URL}|${API_URL}|g" {} + ; \
+    fi
+
+# Build the app
 RUN npm run build
 
 # Production stage
 FROM nginx:alpine
 
-# Copy custom nginx config (optional)
-# COPY nginx.conf /etc/nginx/nginx.conf
-
-# Copy built application
+# Copy built app
 COPY --from=build /app/dist/supermarket-web/browser /usr/share/nginx/html
-
-# Copy entrypoint script
-COPY docker-entrypoint.sh /docker-entrypoint.sh
-RUN chmod +x /docker-entrypoint.sh
 
 # Expose port
 EXPOSE 80
 
-# Use entrypoint script
-ENTRYPOINT ["/docker-entrypoint.sh"]
+CMD ["nginx", "-g", "daemon off;"]

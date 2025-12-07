@@ -1,4 +1,5 @@
 using Microsoft.EntityFrameworkCore;
+using SuperMarket.Application.Common;
 using SuperMarket.Application.DTOs;
 using SuperMarket.Application.Interfaces;
 using SuperMarket.Domain.Common;
@@ -16,7 +17,7 @@ public interface IProductService
     Task<ProductDto?> GetProductByIdAsync(Guid id);
     Task<IEnumerable<ProductDto>> GetProductsByCategoryAsync(Guid categoryId);
     Task<PaginatedResult<ProductDto>> GetProductsPagedAsync(PaginationParams paginationParams);
-    Task<IEnumerable<ProductDto>> SearchProductsAsync(string searchTerm);
+    Task<IEnumerable<ProductDto>> SearchProductsAsync(string searchTerm, int limit = 20);
     Task<ProductDto?> UpdateProductAsync(Guid id, UpdateProductDto dto);
 }
 
@@ -72,8 +73,7 @@ public class ProductService : IProductService
         {
             var searchTerm = paginationParams.SearchTerm.ToLower();
             filtered = filtered.Where(p =>
-                p.Name.ToLower().Contains(searchTerm) ||
-                p.SKU.ToLower().Contains(searchTerm) ||
+                p.SearchText.Contains(searchTerm) ||
                 p.Barcodes.Any(b => b.Barcode.ToLower().Contains(searchTerm)) ||
                 (p.Brand != null && p.Brand.Name.ToLower().Contains(searchTerm))
             );
@@ -311,15 +311,21 @@ public class ProductService : IProductService
         return true;
     }
 
-    public async Task<IEnumerable<ProductDto>> SearchProductsAsync(string searchTerm)
+    public async Task<IEnumerable<ProductDto>> SearchProductsAsync(string searchTerm, int limit = 20)
     {
-        var products = await _unitOfWork.Products.FindAsync(p =>
-            p.IsActive && (
-                p.Name.Contains(searchTerm) ||
-                p.SKU.Contains(searchTerm) ||
+        var normalizedSearchTerm = searchTerm.NormalizeForSearch();
+        
+        // Use computed SearchText column for efficient database-level searching
+        var products = await _unitOfWork.Set<Product>()
+            .Include(p => p.Barcodes)
+            .Include(p => p.Brand)
+            .Where(p => p.IsActive && (
+                p.SearchText.Contains(normalizedSearchTerm) ||
                 p.Barcodes.Any(b => b.Barcode.Contains(searchTerm))
-            )
-        );
+            ))
+            .OrderBy(p => p.Name)
+            .Take(limit)
+            .ToListAsync();
 
         return await MapToDtosAsync(products);
     }

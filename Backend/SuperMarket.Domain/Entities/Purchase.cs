@@ -59,7 +59,6 @@ public class PurchaseItem : Entity
     public PurchaseItem(Product product, int quantity, decimal purchasePrice, decimal? discount = null, string? note = null)
     {
         ProductId = product.Id;
-        Product = product;
         Quantity = quantity;
         PurchasePrice = purchasePrice;
         Discount = discount;

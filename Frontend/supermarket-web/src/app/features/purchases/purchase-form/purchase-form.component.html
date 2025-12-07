@@ -98,40 +98,45 @@
         ></p-button>
       </div>
 
-      <div formArrayName="items" class="items-list">
-        @for (item of items.controls; track $index; let i = $index) {
-          <div [formGroupName]="i" class="item-row">
-            <div class="item-fields">
-              <!-- Product -->
-              <div class="field flex-2">
-                <label>Sản phẩm <span class="required">*</span></label>
-                <p-select
-                  [options]="products"
+      <div formArrayName="items" class="items-table">
+        <p-table [value]="items.controls" [tableStyle]="{ 'min-width': '60rem' }">
+          <ng-template pTemplate="header">
+            <tr>
+              <th style="width: 35%">Sản phẩm <span class="required">*</span></th>
+              <th style="width: 10%">SL <span class="required">*</span></th>
+              <th style="width: 18%">Giá nhập <span class="required">*</span></th>
+              <th style="width: 18%">Chiết khấu</th>
+              <th style="width: 18%">Thành tiền</th>
+              <th style="width: 60px"></th>
+            </tr>
+          </ng-template>
+          <ng-template pTemplate="body" let-item let-i="rowIndex">
+            <tr [formGroupName]="i">
+              <td>
+                <app-product-autocomplete
                   formControlName="productId"
-                  optionLabel="name"
-                  optionValue="id"
-                  placeholder="Chọn sản phẩm"
-                  class="w-full"
-                  [filter]="true"
+                  (productSelected)="onProductSelectedForItem(i, $event)"
+                  placeholder="Tìm sản phẩm..."
+                  styleClass="w-full"
                 >
-                </p-select>
-              </div>
-
-              <!-- Quantity -->
-              <div class="field">
-                <label>Số lượng <span class="required">*</span></label>
+                </app-product-autocomplete>
+              </td>
+              <td>
                 <p-inputNumber
                   formControlName="quantity"
                   [min]="1"
+                  [max]="999"
                   [showButtons]="true"
-                  class="w-full"
+                  buttonLayout="horizontal"
+                  decrementButtonClass="p-button-sm"
+                  incrementButtonClass="p-button-sm"
+                  incrementButtonIcon="pi pi-plus"
+                  decrementButtonIcon="pi pi-minus"
+                  class="w-full quantity-input"
                 >
                 </p-inputNumber>
-              </div>
-
-              <!-- Purchase Price -->
-              <div class="field">
-                <label>Giá nhập <span class="required">*</span></label>
+              </td>
+              <td>
                 <p-inputNumber
                   formControlName="purchasePrice"
                   mode="currency"
@@ -141,11 +146,8 @@
                   class="w-full"
                 >
                 </p-inputNumber>
-              </div>
-
-              <!-- Discount -->
-              <div class="field">
-                <label>Chiết khấu</label>
+              </td>
+              <td>
                 <p-inputNumber
                   formControlName="discount"
                   mode="currency"
@@ -155,11 +157,8 @@
                   class="w-full"
                 >
                 </p-inputNumber>
-              </div>
-
-              <!-- Total -->
-              <div class="field">
-                <label>Thành tiền</label>
+              </td>
+              <td>
                 <input
                   type="text"
                   pInputText
@@ -167,11 +166,17 @@
                   readonly
                   class="w-full"
                 />
-              </div>
-
-              <!-- Remove Button -->
-              <div class="field field-button">
-                <label>&nbsp;</label>
+              </td>
+              <td class="text-center action-cell">
+                <p-button
+                  type="button"
+                  icon="pi pi-comment"
+                  [severity]="showNoteForItem[i] ? 'info' : 'secondary'"
+                  [text]="true"
+                  (onClick)="toggleNoteForItem(i)"
+                  pTooltip="Ghi chú"
+                  [class.active]="showNoteForItem[i]"
+                ></p-button>
                 <p-button
                   type="button"
                   icon="pi pi-trash"
@@ -180,27 +185,32 @@
                   (onClick)="removeItem(i)"
                   pTooltip="Xóa"
                 ></p-button>
-              </div>
-            </div>
-
-            <!-- Item Note -->
-            <div class="field full-width">
-              <textarea
-                pInputTextarea
-                formControlName="note"
-                placeholder="Ghi chú cho sản phẩm này"
-                rows="1"
-                class="w-full"
-              ></textarea>
-            </div>
-          </div>
-        }
-
-        @if (items.length === 0) {
-          <div class="empty-message">
-            Chưa có sản phẩm nào. Nhấn "Thêm sản phẩm" để bắt đầu.
-          </div>
-        }
+              </td>
+            </tr>
+            @if (showNoteForItem[i]) {
+              <tr [formGroupName]="i">
+                <td colspan="6" class="note-row">
+                  <textarea
+                    pInputTextarea
+                    formControlName="note"
+                    placeholder="Ghi chú cho sản phẩm này..."
+                    rows="2"
+                    class="w-full"
+                  ></textarea>
+                </td>
+              </tr>
+            }
+          </ng-template>
+          <ng-template pTemplate="emptymessage">
+            <tr>
+              <td colspan="6" class="text-center">
+                <div class="empty-message">
+                  Chưa có sản phẩm nào. Nhấn "Thêm sản phẩm" để bắt đầu.
+                </div>
+              </td>
+            </tr>
+          </ng-template>
+        </p-table>
       </div>
 
       <!-- Total Amount -->

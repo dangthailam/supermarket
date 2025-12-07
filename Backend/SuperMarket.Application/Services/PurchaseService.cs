@@ -1,3 +1,4 @@
+using Microsoft.EntityFrameworkCore;
 using SuperMarket.Application.DTOs;
 using SuperMarket.Application.Interfaces;
 using SuperMarket.Domain.Common;
@@ -57,6 +58,8 @@ public class PurchaseService : IPurchaseService
             purchaseItems.Add(purchaseItem);
         }
 
+        await _unitOfWork.PurchaseItems.AddRangeAsync(purchaseItems);
+
         // Create purchase
         var purchase = new Purchase(
             purchaseItems,
@@ -68,7 +71,8 @@ public class PurchaseService : IPurchaseService
         );
 
         await _unitOfWork.Purchases.AddAsync(purchase);
-        
+
+
         // Update inventory if status is Paid
         if (dto.Status == (int)PurchaseStatus.Paid)
         {
@@ -85,9 +89,12 @@ public class PurchaseService : IPurchaseService
 
     public async Task<PurchaseDto?> GetPurchaseByIdAsync(Guid id)
     {
-        var purchases = await _unitOfWork.Purchases.FindAsync(p => p.Id == id);
-        var purchase = purchases.FirstOrDefault();
-        
+        var purchase = await _unitOfWork.Set<Purchase>()
+            .Include(p => p.Provider)
+            .Include(p => p.PurchaseItems)
+            .ThenInclude(pi => pi.Product)
+            .AsNoTracking().FirstOrDefaultAsync(p => p.Id == id);
+
         if (purchase == null) return null;
 
         return await MapToDtoAsync(purchase);
@@ -95,7 +102,11 @@ public class PurchaseService : IPurchaseService
 
     public async Task<IEnumerable<PurchaseDto>> GetAllPurchasesAsync()
     {
-        var purchases = await _unitOfWork.Purchases.GetAllAsync();
+        var purchases = await _unitOfWork.Set<Purchase>()
+            .Include(p => p.Provider)
+            .Include(p => p.PurchaseItems)
+            .ThenInclude(pi => pi.Product)
+            .AsNoTracking().ToListAsync();
         return await MapToDtosAsync(purchases);
     }
 
@@ -138,7 +149,7 @@ public class PurchaseService : IPurchaseService
     {
         var purchases = await _unitOfWork.Purchases.FindAsync(p => p.Id == id);
         var purchase = purchases.FirstOrDefault();
-        
+
         if (purchase == null) return null;
 
         var oldStatus = purchase.Status;
@@ -155,7 +166,7 @@ public class PurchaseService : IPurchaseService
             var provider = await _unitOfWork.Providers.FirstOrDefaultAsync(p => p.Id == dto.ProviderId.Value);
             if (provider == null)
                 throw new ArgumentException($"Provider with ID {dto.ProviderId.Value} not found.");
-            
+
             var providerIdProperty = typeof(Purchase).GetProperty("ProviderId");
             var providerProperty = typeof(Purchase).GetProperty("Provider");
             providerIdProperty?.SetValue(purchase, provider.Id);
@@ -234,7 +245,7 @@ public class PurchaseService : IPurchaseService
     {
         var purchases = await _unitOfWork.Purchases.FindAsync(p => p.Id == id);
         var purchase = purchases.FirstOrDefault();
-        
+
         if (purchase == null) return false;
 
         // If purchase was paid, reverse the inventory changes
@@ -268,10 +279,10 @@ public class PurchaseService : IPurchaseService
     {
         var today = DateTime.UtcNow;
         var prefix = $"PO{today:yyyyMMdd}";
-        
+
         var allPurchases = await _unitOfWork.Purchases.GetAllAsync();
         var todayPurchases = allPurchases.Where(p => p.Code.StartsWith(prefix)).ToList();
-        
+
         var maxNumber = 0;
         foreach (var purchase in todayPurchases)
         {
@@ -290,7 +301,7 @@ public class PurchaseService : IPurchaseService
 
     private async Task<PurchaseDto> MapToDtoAsync(Purchase purchase)
     {
-        var totalAmount = purchase.PurchaseItems.Sum(i => 
+        var totalAmount = purchase.PurchaseItems.Sum(i =>
             i.Quantity * i.PurchasePrice - (i.Discount ?? 0));
 
         return new PurchaseDto

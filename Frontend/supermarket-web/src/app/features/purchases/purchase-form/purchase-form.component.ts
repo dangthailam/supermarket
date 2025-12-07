@@ -22,6 +22,8 @@ import { Textarea } from 'primeng/textarea';
 import { MessageService } from 'primeng/api';
 import { Toast } from 'primeng/toast';
 import { DatePickerModule } from 'primeng/datepicker';
+import { TableModule } from 'primeng/table';
+import { ProductAutocompleteComponent } from '../../../shared/components/product-autocomplete/product-autocomplete.component';
 
 @Component({
   selector: 'app-purchase-form',
@@ -38,7 +40,9 @@ import { DatePickerModule } from 'primeng/datepicker';
     ProgressSpinner,
     DatePickerModule,
     Textarea,
-    Toast
+    Toast,
+    TableModule,
+    ProductAutocompleteComponent
   ],
   providers: [MessageService],
   templateUrl: './purchase-form.component.html',
@@ -52,6 +56,7 @@ export class PurchaseFormComponent implements OnInit {
   error = '';
   providers: ProviderDto[] = [];
   products: ProductDto[] = [];
+  showNoteForItem: { [key: number]: boolean } = {};
   
   statusOptions = [
     { label: 'Chờ xử lý', value: 1 },
@@ -96,13 +101,28 @@ export class PurchaseFormComponent implements OnInit {
   }
 
   createItemFormGroup(item?: CreatePurchaseItemDto): FormGroup {
-    return this.fb.group({
+    const formGroup = this.fb.group({
       productId: [item?.productId || null, Validators.required],
       quantity: [item?.quantity || 1, [Validators.required, Validators.min(1)]],
       purchasePrice: [item?.purchasePrice || 0, [Validators.required, Validators.min(0)]],
       discount: [item?.discount || 0, Validators.min(0)],
       note: [item?.note || '']
     });
+
+    return formGroup;
+  }
+
+  onProductSelectedForItem(index: number, product: ProductDto): void {
+    const itemFormGroup = this.items.at(index);
+    if (product && product.price) {
+      itemFormGroup.patchValue({
+        purchasePrice: product.price
+      });
+    }
+  }
+
+  toggleNoteForItem(index: number): void {
+    this.showNoteForItem[index] = !this.showNoteForItem[index];
   }
 
   addItem(): void {

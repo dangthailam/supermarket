@@ -60,9 +60,14 @@ public class SuperMarketDbContext : DbContext
             entity.Property(e => e.ProductType).HasMaxLength(100);
             entity.Property(e => e.Unit).HasMaxLength(50);
             entity.Property(e => e.Location).HasMaxLength(100);
+            
+            // Computed column for accent-insensitive search
+            entity.Property(e => e.SearchText)
+                .HasComputedColumnSql("LOWER(immutable_unaccent(\"Name\" || ' ' || \"SKU\"))", stored: true);
 
             entity.HasIndex(e => e.SKU).IsUnique();
             entity.HasIndex(e => e.Name);
+            entity.HasIndex(e => e.SearchText); // Index for fast searching
             entity.HasIndex(e => e.CategoryId);
 
             entity.HasOne(e => e.Category)

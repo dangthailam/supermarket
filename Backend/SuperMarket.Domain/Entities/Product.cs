@@ -7,6 +7,7 @@ public class Product : Entity
     public string SKU { get; private set; } = string.Empty;
     public string Name { get; private set; } = string.Empty;
     public string? Description { get; private set; }
+    public string SearchText { get; private set; } = string.Empty; // Computed column for accent-insensitive search
     public decimal Price { get; private set; }
     public decimal CostPrice { get; private set; }
     public int StockQuantity { get; private set; }

@@ -84,13 +84,13 @@ public class ProductsController : ControllerBase
         return Ok(products);
     }
 
-    [HttpGet("search")]
-    public async Task<ActionResult<IEnumerable<ProductDto>>> SearchProducts([FromQuery] string searchTerm)
+    [HttpGet("search", Name = "SearchProducts")]
+    public async Task<ActionResult<IEnumerable<ProductDto>>> SearchProducts([FromQuery] string searchTerm, [FromQuery] int limit = 20)
     {
         if (string.IsNullOrWhiteSpace(searchTerm))
             return BadRequest("Search term is required");
 
-        var products = await _productService.SearchProductsAsync(searchTerm);
+        var products = await _productService.SearchProductsAsync(searchTerm, limit);
         return Ok(products);
     }
 

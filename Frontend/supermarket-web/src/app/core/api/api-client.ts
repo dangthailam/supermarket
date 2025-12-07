@@ -1072,14 +1072,19 @@ export class SuperMarketApiClient {
 
     /**
      * @param searchTerm (optional) 
+     * @param limit (optional) 
      * @return OK
      */
-    search(searchTerm?: string | undefined): Observable<ProductDto[]> {
+    searchProducts(searchTerm?: string | undefined, limit?: number | undefined): Observable<ProductDto[]> {
         let url_ = this.baseUrl + "/api/Products/search?";
         if (searchTerm === null)
             throw new globalThis.Error("The parameter 'searchTerm' cannot be null.");
         else if (searchTerm !== undefined)
             url_ += "searchTerm=" + encodeURIComponent("" + searchTerm) + "&";
+        if (limit === null)
+            throw new globalThis.Error("The parameter 'limit' cannot be null.");
+        else if (limit !== undefined)
+            url_ += "limit=" + encodeURIComponent("" + limit) + "&";
         url_ = url_.replace(/[?&]$/, "");
 
         let options_ : any = {
@@ -1091,11 +1096,11 @@ export class SuperMarketApiClient {
         };
 
         return this.http.request("get", url_, options_).pipe(_observableMergeMap((response_ : any) => {
-            return this.processSearch(response_);
+            return this.processSearchProducts(response_);
         })).pipe(_observableCatch((response_: any) => {
             if (response_ instanceof HttpResponseBase) {
                 try {
-                    return this.processSearch(response_ as any);
+                    return this.processSearchProducts(response_ as any);
                 } catch (e) {
                     return _observableThrow(e) as any as Observable<ProductDto[]>;
                 }
@@ -1104,7 +1109,7 @@ export class SuperMarketApiClient {
         }));
     }
 
-    protected processSearch(response: HttpResponseBase): Observable<ProductDto[]> {
+    protected processSearchProducts(response: HttpResponseBase): Observable<ProductDto[]> {
         const status = response.status;
         const responseBlob =
             response instanceof HttpResponse ? response.body :

@@ -17,7 +17,6 @@ import { InputNumber } from 'primeng/inputnumber';
 import { Select } from 'primeng/select';
 import { Button } from 'primeng/button';
 import { Message } from 'primeng/message';
-import { ProgressSpinner } from 'primeng/progressspinner';
 import { Textarea } from 'primeng/textarea';
 import { MessageService } from 'primeng/api';
 import { Toast } from 'primeng/toast';
@@ -37,7 +36,6 @@ import { ProductAutocompleteComponent } from '../../../shared/components/product
     Select,
     Button,
     Message,
-    ProgressSpinner,
     DatePickerModule,
     Textarea,
     Toast,
@@ -52,7 +50,6 @@ export class PurchaseFormComponent implements OnInit {
   purchaseForm!: FormGroup;
   isEditMode = false;
   purchaseId?: string;
-  loading = false;
   error = '';
   providers: ProviderDto[] = [];
   products: ProductDto[] = [];
@@ -160,7 +157,6 @@ export class PurchaseFormComponent implements OnInit {
   loadPurchase(): void {
     if (!this.purchaseId) return;
 
-    this.loading = true;
     this.apiClient.purchasesGET(this.purchaseId).subscribe({
       next: (purchase: PurchaseDto) => {
         this.purchaseForm.patchValue({
@@ -180,13 +176,10 @@ export class PurchaseFormComponent implements OnInit {
             note: item.note
           }));
         });
-
-        this.loading = false;
       },
       error: (err) => {
         this.error = 'Không thể tải phiếu nhập';
         console.error(err);
-        this.loading = false;
       }
     });
   }
@@ -206,7 +199,6 @@ export class PurchaseFormComponent implements OnInit {
       return;
     }
 
-    this.loading = true;
     this.error = '';
 
     const formValue = this.purchaseForm.value;
@@ -232,7 +224,6 @@ export class PurchaseFormComponent implements OnInit {
         error: (err) => {
           this.error = 'Không thể cập nhật phiếu nhập';
           console.error(err);
-          this.loading = false;
         }
       });
     } else {
@@ -256,7 +247,6 @@ export class PurchaseFormComponent implements OnInit {
         error: (err) => {
           this.error = 'Không thể tạo phiếu nhập';
           console.error(err);
-          this.loading = false;
         }
       });
     }

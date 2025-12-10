@@ -11,18 +11,10 @@
     <p-message severity="error" [text]="error" class="mb-3"></p-message>
   }
 
-  @if (loading) {
-    <div class="loading-container">
-      <p-progressSpinner></p-progressSpinner>
-      <p>Đang tải...</p>
-    </div>
-  }
-
   <form
     [formGroup]="purchaseForm"
     (ngSubmit)="onSubmit()"
     class="purchase-form"
-    *ngIf="!loading"
   >
     <div class="form-grid">
       <!-- Purchase Date -->
@@ -228,15 +220,12 @@
         icon="pi pi-times"
         severity="secondary"
         (onClick)="onCancel()"
-        [disabled]="loading"
       >
       </p-button>
       <p-button
-        [label]="loading ? 'Đang lưu...' : isEditMode ? 'Cập nhật' : 'Tạo phiếu nhập'"
+        [label]="isEditMode ? 'Cập nhật' : 'Tạo phiếu nhập'"
         icon="pi pi-check"
         type="submit"
-        [disabled]="loading"
-        [loading]="loading"
       >
       </p-button>
     </div>

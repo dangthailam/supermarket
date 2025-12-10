@@ -121,7 +121,7 @@ public class PurchasesController : ControllerBase
                 return BadRequest(ModelState);
 
             var purchase = await _purchaseService.CreatePurchaseAsync(dto);
-            return CreatedAtAction(nameof(Get), new { id = purchase.Id }, purchase);
+            return Ok(purchase);
         }
         catch (ArgumentException ex)
         {

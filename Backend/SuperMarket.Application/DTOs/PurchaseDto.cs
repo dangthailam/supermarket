@@ -52,5 +52,5 @@ public class UpdatePurchaseDto
     public Guid? ProviderId { get; set; }
     public int? Status { get; set; }
     public string? Note { get; set; }
-    public List<CreatePurchaseItemDto>? Items { get; set; }
+    public List<CreatePurchaseItemDto> Items { get; set; } = [];
 }

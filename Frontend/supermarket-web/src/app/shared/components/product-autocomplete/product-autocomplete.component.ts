@@ -18,13 +18,13 @@ import { debounceTime, Subject, switchMap } from 'rxjs';
   ],
   template: `
     <p-autocomplete
-      [(ngModel)]="selectedProduct"
+      [(ngModel)]="selectedProductDisplay"
       [suggestions]="filteredProducts"
       (completeMethod)="searchProducts($event)"
       (onSelect)="onProductSelect($event)"
       (onClear)="onClear()"
+      dataKey="id"
       optionLabel="displayText"
-      optionValue="id"
       [placeholder]="placeholder"
       [dropdown]="dropdown"
       [forceSelection]="forceSelection"
@@ -119,6 +119,8 @@ export class ProductAutocompleteComponent implements ControlValueAccessor {
   @Output() productCleared = new EventEmitter<void>();
 
   selectedProduct: ProductDto | null = null;
+  selectedProductId: string | null = null;
+  selectedProductDisplay: string | null = null;
   filteredProducts: ProductDto[] = [];
 
   private searchSubject = new Subject<string>();
@@ -148,8 +150,11 @@ export class ProductAutocompleteComponent implements ControlValueAccessor {
   }
 
   onProductSelect(event: AutoCompleteSelectEvent): void {
-    const product = event.value;
+    const product = event.value as ProductDto;
+    this.selectedProductId = product.id!;
     this.selectedProduct = product;
+    this.selectedProductDisplay = product.name!;
+    
     this.onChange(product.id);
     this.onTouched();
     this.productSelected.emit(product);
@@ -157,6 +162,8 @@ export class ProductAutocompleteComponent implements ControlValueAccessor {
 
   onClear(): void {
     this.selectedProduct = null;
+    this.selectedProductId = null;
+    this.selectedProductDisplay = null;
     this.onChange(null);
     this.onTouched();
     this.productCleared.emit();
@@ -174,16 +181,23 @@ export class ProductAutocompleteComponent implements ControlValueAccessor {
   // ControlValueAccessor implementation
   writeValue(value: any): void {
     if (value) {
-      // If value is a product ID, fetch the product details
+      // If value is a product ID string, fetch and display the product
       if (typeof value === 'string') {
+        this.selectedProductId = value;
         this.apiClient.productsGET(value).subscribe(product => {
           this.selectedProduct = product;
+          this.selectedProductDisplay = product.name!;
         });
       } else if (value && value.id) {
+        // If value is a product object, use its ID and name for display
+        this.selectedProductId = value.id;
         this.selectedProduct = value;
+        this.selectedProductDisplay = value.name;
       }
     } else {
       this.selectedProduct = null;
+      this.selectedProductId = null;
+      this.selectedProductDisplay = null;
     }
   }
 

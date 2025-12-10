@@ -30,9 +30,8 @@ public class PurchaseService : IPurchaseService
     public async Task<PurchaseDto> CreatePurchaseAsync(CreatePurchaseDto dto)
     {
         // Validate provider exists
-        var provider = await _unitOfWork.Providers.FirstOrDefaultAsync(p => p.Id == dto.ProviderId);
-        if (provider == null)
-            throw new ArgumentException($"Provider with ID {dto.ProviderId} not found.");
+        var provider = await _unitOfWork.Providers.FirstOrDefaultAsync(p => p.Id == dto.ProviderId)
+            ?? throw new ArgumentException($"Provider with ID {dto.ProviderId} not found.");
 
         // Validate products exist
         var productIds = dto.Items.Select(i => i.ProductId).ToList();
@@ -41,48 +40,49 @@ public class PurchaseService : IPurchaseService
             throw new ArgumentException("One or more products not found.");
 
         // Generate unique purchase code
-        var code = await GeneratePurchaseCodeAsync();
+        var allPurchases = await _unitOfWork.Purchases.GetAllAsync();
+        var code = PurchaseCodeGenerator.GenerateCode(allPurchases);
 
         // Create purchase items
-        var purchaseItems = new List<PurchaseItem>();
-        foreach (var itemDto in dto.Items)
-        {
-            var product = products.First(p => p.Id == itemDto.ProductId);
-            var purchaseItem = new PurchaseItem(
-                product,
-                itemDto.Quantity,
-                itemDto.PurchasePrice,
-                itemDto.Discount,
-                itemDto.Note
-            );
-            purchaseItems.Add(purchaseItem);
-        }
+        var purchaseItems = dto.Items
+            .Select(itemDto =>
+            {
+                var product = products.First(p => p.Id == itemDto.ProductId);
+                return new PurchaseItem(
+                    product,
+                    itemDto.Quantity,
+                    itemDto.PurchasePrice,
+                    itemDto.Discount,
+                    itemDto.Note
+                );
+            })
+            .ToList();
 
-        await _unitOfWork.PurchaseItems.AddRangeAsync(purchaseItems);
-
-        // Create purchase
+        // Create purchase (initial status is Pending)
         var purchase = new Purchase(
             purchaseItems,
             dto.PurchaseDate,
             code,
             provider,
-            (PurchaseStatus)dto.Status,
+            PurchaseStatus.Pending,
             dto.Note
         );
 
-        await _unitOfWork.Purchases.AddAsync(purchase);
-
-
-        // Update inventory if status is Paid
+        // If incoming status is Paid, transition to Paid (handles inventory updates)
         if (dto.Status == (int)PurchaseStatus.Paid)
         {
-            foreach (var item in purchaseItems)
-            {
-                item.Product.UpdateStock(item.Quantity);
-            }
+            purchase.MarkAsPaid();
         }
 
+        await _unitOfWork.PurchaseItems.AddRangeAsync(purchaseItems);
+        await _unitOfWork.Purchases.AddAsync(purchase);
         await _unitOfWork.SaveChangesAsync();
+
+        purchase = await _unitOfWork.Set<Purchase>()
+            .Include(p => p.Provider)
+            .Include(p => p.PurchaseItems)
+            .ThenInclude(pi => pi.Product)
+            .FirstAsync(p => p.Id == purchase.Id);
 
         return await MapToDtoAsync(purchase);
     }
@@ -93,7 +93,8 @@ public class PurchaseService : IPurchaseService
             .Include(p => p.Provider)
             .Include(p => p.PurchaseItems)
             .ThenInclude(pi => pi.Product)
-            .AsNoTracking().FirstOrDefaultAsync(p => p.Id == id);
+            .AsNoTracking()
+            .FirstOrDefaultAsync(p => p.Id == id);
 
         if (purchase == null) return null;
 
@@ -106,33 +107,18 @@ public class PurchaseService : IPurchaseService
             .Include(p => p.Provider)
             .Include(p => p.PurchaseItems)
             .ThenInclude(pi => pi.Product)
-            .AsNoTracking().ToListAsync();
+            .AsNoTracking()
+            .ToListAsync();
+
         return await MapToDtosAsync(purchases);
     }
 
     public async Task<PaginatedResult<PurchaseDto>> GetPurchasesPagedAsync(PaginationParams paginationParams)
     {
-        Func<IQueryable<Purchase>, IOrderedQueryable<Purchase>> orderBy = query =>
-        {
-            return paginationParams.SortBy?.ToLower() switch
-            {
-                "code" => paginationParams.SortDescending
-                    ? query.OrderByDescending(p => p.Code)
-                    : query.OrderBy(p => p.Code),
-                "purchasedate" => paginationParams.SortDescending
-                    ? query.OrderByDescending(p => p.PurchaseDate)
-                    : query.OrderBy(p => p.PurchaseDate),
-                "status" => paginationParams.SortDescending
-                    ? query.OrderByDescending(p => p.Status)
-                    : query.OrderBy(p => p.Status),
-                _ => query.OrderByDescending(p => p.PurchaseDate)
-            };
-        };
-
         var paginatedResult = await _unitOfWork.Purchases.GetPagedAsync(
             paginationParams.PageNumber,
             paginationParams.PageSize,
-            orderBy: orderBy
+            orderBy: CreateSortExpression(paginationParams)
         );
 
         var dtos = await MapToDtosAsync(paginatedResult.Items);
@@ -147,116 +133,65 @@ public class PurchaseService : IPurchaseService
 
     public async Task<PurchaseDto?> UpdatePurchaseAsync(Guid id, UpdatePurchaseDto dto)
     {
-        var purchases = await _unitOfWork.Purchases.FindAsync(p => p.Id == id);
-        var purchase = purchases.FirstOrDefault();
+        var purchase = await _unitOfWork.Set<Purchase>()
+            .Include(p => p.PurchaseItems)
+            .FirstOrDefaultAsync(p => p.Id == id) ?? throw new ArgumentException($"Purchase with ID {id} not found.");
 
-        if (purchase == null) return null;
-
-        var oldStatus = purchase.Status;
-
-        // Update purchase properties using reflection since properties are private
-        if (dto.PurchaseDate.HasValue)
+        // Update purchase metadata
+        if (dto.PurchaseDate.HasValue || dto.ProviderId.HasValue || dto.Note != null || dto.Items != null)
         {
-            var purchaseDateProperty = typeof(Purchase).GetProperty("PurchaseDate");
-            purchaseDateProperty?.SetValue(purchase, dto.PurchaseDate.Value);
+            var provider = dto.ProviderId.HasValue
+                ? await _unitOfWork.Providers.FirstOrDefaultAsync(p => p.Id == dto.ProviderId.Value)
+                    ?? throw new ArgumentException($"Provider with ID {dto.ProviderId.Value} not found.")
+                : purchase.Provider;
+
+            var purchaseDate = dto.PurchaseDate ?? purchase.PurchaseDate;
+            var note = dto.Note ?? purchase.Note;
+            var items = dto.Items != null
+                ? await CreatePurchaseItemsAsync(dto.Items)
+                : purchase.PurchaseItems;
+
+            _unitOfWork.PurchaseItems.RemoveRange(purchase.PurchaseItems);
+
+            purchase.UpdatePurchase(purchaseDate, provider, note, items);
         }
 
-        if (dto.ProviderId.HasValue)
-        {
-            var provider = await _unitOfWork.Providers.FirstOrDefaultAsync(p => p.Id == dto.ProviderId.Value);
-            if (provider == null)
-                throw new ArgumentException($"Provider with ID {dto.ProviderId.Value} not found.");
-
-            var providerIdProperty = typeof(Purchase).GetProperty("ProviderId");
-            var providerProperty = typeof(Purchase).GetProperty("Provider");
-            providerIdProperty?.SetValue(purchase, provider.Id);
-            providerProperty?.SetValue(purchase, provider);
-        }
-
+        // Handle status transition
         if (dto.Status.HasValue)
         {
-            var statusProperty = typeof(Purchase).GetProperty("Status");
-            statusProperty?.SetValue(purchase, (PurchaseStatus)dto.Status.Value);
-
-            // Handle inventory changes when status changes
-            if (oldStatus != PurchaseStatus.Paid && dto.Status.Value == (int)PurchaseStatus.Paid)
-            {
-                // Status changed to Paid - add stock
-                foreach (var item in purchase.PurchaseItems)
-                {
-                    item.Product.UpdateStock(item.Quantity);
-                }
-            }
-            else if (oldStatus == PurchaseStatus.Paid && dto.Status.Value != (int)PurchaseStatus.Paid)
-            {
-                // Status changed from Paid - remove stock
-                foreach (var item in purchase.PurchaseItems)
-                {
-                    item.Product.UpdateStock(-item.Quantity);
-                }
-            }
-        }
-
-        if (dto.Note != null)
-        {
-            var noteProperty = typeof(Purchase).GetProperty("Note");
-            noteProperty?.SetValue(purchase, dto.Note);
-        }
-
-        // Update items if provided
-        if (dto.Items != null)
-        {
-            // Remove old items
-            var oldItems = purchase.PurchaseItems.ToList();
-            foreach (var item in oldItems)
-            {
-                _unitOfWork.PurchaseItems.Remove(item);
-            }
-
-            // Add new items
-            var newItems = new List<PurchaseItem>();
-            foreach (var itemDto in dto.Items)
-            {
-                var product = await _unitOfWork.Products.FirstOrDefaultAsync(p => p.Id == itemDto.ProductId);
-                if (product == null)
-                    throw new ArgumentException($"Product with ID {itemDto.ProductId} not found.");
-
-                var newItem = new PurchaseItem(
-                    product,
-                    itemDto.Quantity,
-                    itemDto.PurchasePrice,
-                    itemDto.Discount,
-                    itemDto.Note
-                );
-                newItems.Add(newItem);
-            }
-
-            var itemsProperty = typeof(Purchase).GetProperty("PurchaseItems");
-            itemsProperty?.SetValue(purchase, newItems);
+            var newStatus = (PurchaseStatus)dto.Status.Value;
+            purchase.TransitionToStatus(newStatus);
         }
 
         _unitOfWork.Purchases.Update(purchase);
         await _unitOfWork.SaveChangesAsync();
+
+        purchase = await _unitOfWork.Set<Purchase>()
+            .Include(p => p.PurchaseItems)
+            .ThenInclude(pi => pi.Product)
+            .FirstAsync(p => p.Id == id);
 
         return await MapToDtoAsync(purchase);
     }
 
     public async Task<bool> DeletePurchaseAsync(Guid id)
     {
-        var purchases = await _unitOfWork.Purchases.FindAsync(p => p.Id == id);
-        var purchase = purchases.FirstOrDefault();
+        var purchase = await _unitOfWork.Set<Purchase>()
+        .Include(p => p.PurchaseItems)
+        .ThenInclude(pi => pi.Product)
+        .FirstOrDefaultAsync(p => p.Id == id);
 
         if (purchase == null) return false;
 
-        // If purchase was paid, reverse the inventory changes
-        if (purchase.Status == PurchaseStatus.Paid)
-        {
-            foreach (var item in purchase.PurchaseItems)
-            {
-                item.Product.UpdateStock(-item.Quantity);
-            }
-        }
+        // Cancel the purchase (handles inventory reversal if needed)
+        purchase.Cancel();
 
+        foreach (var product in purchase.PurchaseItems
+            .Select(pi => pi.Product).ToList())
+        {
+            _unitOfWork.Products.Update(product);
+        }
+        _unitOfWork.PurchaseItems.RemoveRange(purchase.PurchaseItems);
         _unitOfWork.Purchases.Remove(purchase);
         await _unitOfWork.SaveChangesAsync();
 
@@ -275,36 +210,65 @@ public class PurchaseService : IPurchaseService
         return await MapToDtosAsync(purchases);
     }
 
-    private async Task<string> GeneratePurchaseCodeAsync()
+    /// <summary>
+    /// Creates a sort expression based on pagination parameters.
+    /// </summary>
+    private static Func<IQueryable<Purchase>, IOrderedQueryable<Purchase>> CreateSortExpression(
+        PaginationParams paginationParams)
     {
-        var today = DateTime.UtcNow;
-        var prefix = $"PO{today:yyyyMMdd}";
-
-        var allPurchases = await _unitOfWork.Purchases.GetAllAsync();
-        var todayPurchases = allPurchases.Where(p => p.Code.StartsWith(prefix)).ToList();
-
-        var maxNumber = 0;
-        foreach (var purchase in todayPurchases)
+        return query => paginationParams.SortBy?.ToLower() switch
         {
-            if (purchase.Code.Length > prefix.Length)
-            {
-                var numberPart = purchase.Code.Substring(prefix.Length);
-                if (int.TryParse(numberPart, out var number))
-                {
-                    maxNumber = Math.Max(maxNumber, number);
-                }
-            }
-        }
-
-        return $"{prefix}{(maxNumber + 1):D4}";
+            "code" => paginationParams.SortDescending
+                ? query.OrderByDescending(p => p.Code)
+                : query.OrderBy(p => p.Code),
+            "purchasedate" => paginationParams.SortDescending
+                ? query.OrderByDescending(p => p.PurchaseDate)
+                : query.OrderBy(p => p.PurchaseDate),
+            "status" => paginationParams.SortDescending
+                ? query.OrderByDescending(p => p.Status)
+                : query.OrderBy(p => p.Status),
+            _ => query.OrderByDescending(p => p.PurchaseDate)
+        };
     }
 
-    private async Task<PurchaseDto> MapToDtoAsync(Purchase purchase)
+    /// <summary>
+    /// Creates PurchaseItem entities from DTOs with product validation.
+    /// </summary>
+    private async Task<ICollection<PurchaseItem>> CreatePurchaseItemsAsync(
+        IEnumerable<CreatePurchaseItemDto> itemDtos)
+    {
+        var items = new List<PurchaseItem>();
+        var productIds = itemDtos.Select(i => i.ProductId).Distinct().ToList();
+        var products = await _unitOfWork.Products.FindAsync(p => productIds.Contains(p.Id));
+
+        foreach (var itemDto in itemDtos)
+        {
+            var product = products.FirstOrDefault(p => p.Id == itemDto.ProductId)
+                ?? throw new ArgumentException($"Product with ID {itemDto.ProductId} not found.");
+
+            items.Add(new PurchaseItem(
+                product,
+                itemDto.Quantity,
+                itemDto.PurchasePrice,
+                itemDto.Discount,
+                itemDto.Note
+            ));
+        }
+
+        await _unitOfWork.PurchaseItems.AddRangeAsync(items);
+
+        return items;
+    }
+
+    /// <summary>
+    /// Maps a single Purchase to its DTO representation.
+    /// </summary>
+    private static Task<PurchaseDto> MapToDtoAsync(Purchase purchase)
     {
         var totalAmount = purchase.PurchaseItems.Sum(i =>
             i.Quantity * i.PurchasePrice - (i.Discount ?? 0));
 
-        return new PurchaseDto
+        var dto = new PurchaseDto
         {
             Id = purchase.Id,
             Code = purchase.Code,
@@ -329,9 +293,14 @@ public class PurchaseService : IPurchaseService
                 Note = i.Note
             }).ToList()
         };
+
+        return Task.FromResult(dto);
     }
 
-    private async Task<IEnumerable<PurchaseDto>> MapToDtosAsync(IEnumerable<Purchase> purchases)
+    /// <summary>
+    /// Maps multiple Purchase entities to their DTO representations.
+    /// </summary>
+    private static async Task<IEnumerable<PurchaseDto>> MapToDtosAsync(IEnumerable<Purchase> purchases)
     {
         var dtos = new List<PurchaseDto>();
         foreach (var purchase in purchases)

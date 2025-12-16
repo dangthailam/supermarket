@@ -4,7 +4,7 @@ using SuperMarket.Application.Interfaces;
 using SuperMarket.Domain.Common;
 using SuperMarket.Domain.Entities;
 
-namespace SuperMarket.Application.Services;
+namespace SuperMarket.Application.Inventory;
 
 public interface IPurchaseService
 {

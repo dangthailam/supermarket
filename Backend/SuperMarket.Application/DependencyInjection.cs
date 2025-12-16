@@ -1,5 +1,7 @@
 using Microsoft.Extensions.DependencyInjection;
 using SuperMarket.Application.Interfaces;
+using SuperMarket.Application.Inventory;
+using SuperMarket.Application.Sales;
 using SuperMarket.Application.Services;
 using System.Reflection;
 

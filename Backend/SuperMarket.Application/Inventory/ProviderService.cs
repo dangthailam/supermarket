@@ -4,7 +4,7 @@ using SuperMarket.Domain.Common;
 using SuperMarket.Domain.Entities;
 using SuperMarket.Domain.ValueObjects;
 
-namespace SuperMarket.Application.Services;
+namespace SuperMarket.Application.Inventory;
 
 public class ProviderService : IProviderService
 {

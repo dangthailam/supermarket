@@ -1,6 +1,6 @@
 using Microsoft.AspNetCore.Mvc;
 using SuperMarket.Application.DTOs;
-using SuperMarket.Application.Services;
+using SuperMarket.Application.Inventory;
 using SuperMarket.Domain.Common;
 using SuperMarket.Domain.Entities;
 

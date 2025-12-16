@@ -22,4 +22,14 @@ public interface IRepository<T> where T : class
         int pageSize,
         Expression<Func<T, bool>>? filter = null,
         Func<IQueryable<T>, IOrderedQueryable<T>>? orderBy = null);
+    
+    /// <summary>
+    /// Gets all entities including soft-deleted ones
+    /// </summary>
+    Task<IEnumerable<T>> GetAllIncludingDeletedAsync();
+    
+    /// <summary>
+    /// Finds entities including soft-deleted ones
+    /// </summary>
+    Task<IEnumerable<T>> FindIncludingDeletedAsync(Expression<Func<T, bool>> predicate);
 }

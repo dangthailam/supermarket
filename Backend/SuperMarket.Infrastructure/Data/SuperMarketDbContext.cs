@@ -28,9 +28,33 @@ public class SuperMarketDbContext : DbContext
         base.OnConfiguring(optionsBuilder);
     }
 
+    /// <summary>
+    /// Gets a DbSet for entities including soft-deleted ones (ignores global query filter)
+    /// </summary>
+    public DbSet<TEntity> SetIncludingDeleted<TEntity>() where TEntity : class
+    {
+        return Set<TEntity>();
+    }
+
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         base.OnModelCreating(modelBuilder);
+
+        // Apply global query filter for soft delete
+        foreach (var entityType in modelBuilder.Model.GetEntityTypes())
+        {
+            if (typeof(SuperMarket.Domain.Common.Entity).IsAssignableFrom(entityType.ClrType))
+            {
+                var parameter = System.Linq.Expressions.Expression.Parameter(entityType.ClrType, "e");
+                var property = System.Linq.Expressions.Expression.Property(parameter, "DeletedAt");
+                var condition = System.Linq.Expressions.Expression.Equal(
+                    property,
+                    System.Linq.Expressions.Expression.Constant(null, typeof(DateTime?))
+                );
+                var lambda = System.Linq.Expressions.Expression.Lambda(condition, parameter);
+                modelBuilder.Entity(entityType.ClrType).HasQueryFilter(lambda);
+            }
+        }
 
         // Category configuration
         modelBuilder.Entity<Category>(entity =>

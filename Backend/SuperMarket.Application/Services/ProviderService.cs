@@ -17,10 +17,7 @@ public class ProviderService : IProviderService
 
     public async Task<ProviderDto> CreateProviderAsync(CreateProviderDto dto)
     {
-        // Generate code if not provided
-        var code = GenerateProviderCode(dto.Name);
-
-        // Create address
+        var code = Provider.GenerateCode(dto.Name);
         var address = new Address(
             dto.Address ?? "Not specified",
             dto.District ?? "Not specified",
@@ -109,7 +106,6 @@ public class ProviderService : IProviderService
         var provider = await _unitOfWork.Providers.FirstOrDefaultAsync(p => p.Id == id);
         if (provider == null) return null;
 
-        // Update properties
         var name = dto.Name ?? provider.Name;
         var code = dto.Code ?? provider.Code;
         var phone = dto.Phone ?? provider.Phone;
@@ -118,28 +114,22 @@ public class ProviderService : IProviderService
         var companyName = dto.CompanyName ?? provider.CompanyName;
         var taxNumber = dto.TaxNumber ?? provider.TaxNumber;
 
-        // Update address if provided
         var address = provider.Address;
         if (!string.IsNullOrWhiteSpace(dto.Address) || !string.IsNullOrWhiteSpace(dto.District) || !string.IsNullOrWhiteSpace(dto.City))
         {
             address = new Address(
-                dto.Address ?? provider.Address.AddressLine,
-                dto.District ?? provider.Address.District,
-                dto.City ?? provider.Address.City
+                dto.Address ?? provider.Address?.AddressLine ?? "Not specified",
+                dto.District ?? provider.Address?.District ?? "Not specified",
+                dto.City ?? provider.Address?.City ?? "Not specified"
             );
         }
 
-        // Create new provider with updated values (since properties are private set)
-        var updatedProvider = new Provider(name, code, phone, email, address, note, companyName, taxNumber);
+        provider.UpdateProvider(name, code, phone, email, address, note, companyName, taxNumber);
         
-        // Copy the Id from the original to maintain database reference
-        var idProperty = typeof(Provider).BaseType?.GetProperty("Id");
-        idProperty?.SetValue(updatedProvider, id);
-
-        _unitOfWork.Providers.Update(updatedProvider);
+        _unitOfWork.Providers.Update(provider);
         await _unitOfWork.SaveChangesAsync();
 
-        return MapToDto(updatedProvider, dto.Name);
+        return MapToDto(provider, name);
     }
 
     public async Task<bool> DeleteProviderAsync(Guid id)
@@ -147,7 +137,8 @@ public class ProviderService : IProviderService
         var provider = await _unitOfWork.Providers.FirstOrDefaultAsync(p => p.Id == id);
         if (provider == null) return false;
 
-        _unitOfWork.Providers.Remove(provider);
+        provider.SoftDelete();
+        _unitOfWork.Providers.Update(provider);
         await _unitOfWork.SaveChangesAsync();
 
         return true;
@@ -162,23 +153,13 @@ public class ProviderService : IProviderService
             Code = provider.Code,
             Phone = provider.Phone,
             Email = provider.Email,
-            Address = provider.Address.AddressLine,
-            District = provider.Address.District,
-            City = provider.Address.City,
+            Address = provider.Address?.AddressLine ?? string.Empty,
+            District = provider.Address?.District ?? string.Empty,
+            City = provider.Address?.City ?? string.Empty,
             Note = provider.Note,
             CompanyName = provider.CompanyName,
             TaxNumber = provider.TaxNumber,
             ContactName = contactName ?? string.Empty
         };
-    }
-
-    private string GenerateProviderCode(string providerName)
-    {
-        // Generate code from provider name: take first 3 letters + timestamp
-        var prefix = new string(providerName.Where(char.IsLetterOrDigit).Take(3).ToArray()).ToUpper();
-        if (prefix.Length < 3) prefix = prefix.PadRight(3, 'X');
-        
-        var timestamp = DateTimeOffset.UtcNow.ToUnixTimeSeconds().ToString().Substring(5);
-        return $"{prefix}-{timestamp}";
     }
 }

@@ -286,24 +286,9 @@ public class ProductService : IProductService
         var product = await _unitOfWork.Products.FirstOrDefaultAsync(p => p.Id == id);
         if (product == null) return false;
 
-        // Soft delete by deactivating
-        product.UpdateDetails(
-            product.Name,
-            product.Description,
-            product.Price,
-            product.CostPrice,
-            product.MinStockLevel,
-            product.MaxStockLevel,
-            false, // IsActive = false
-            product.ProductType,
-            product.Brand,
-            product.Unit,
-            product.Weight,
-            product.Location,
-            product.DirectSalesEnabled,
-            product.PointsEnabled,
-            product.ImageUrl
-        );
+        // Deactivate (business logic) and soft delete (audit trail)
+        product.Deactivate();
+        product.SoftDelete();
 
         _unitOfWork.Products.Update(product);
         await _unitOfWork.SaveChangesAsync();

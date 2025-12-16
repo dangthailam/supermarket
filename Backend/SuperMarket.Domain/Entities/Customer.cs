@@ -54,4 +54,12 @@ public class Customer : Entity
         IsActive = true;
         UpdatedAt = DateTime.UtcNow;
     }
+
+    /// <summary>
+    /// Validates if the email is valid (not empty and not null)
+    /// </summary>
+    public static bool ValidateEmail(string? email)
+    {
+        return !string.IsNullOrWhiteSpace(email);
+    }
 }

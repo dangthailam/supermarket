@@ -18,14 +18,13 @@ public class CustomerService : ICustomerService
     public async Task<CustomerDto> CreateCustomerAsync(CreateCustomerDto dto)
     {
         // Validate email uniqueness if provided
-        if (!string.IsNullOrWhiteSpace(dto.Email))
+        if (Customer.ValidateEmail(dto.Email))
         {
             var existingCustomer = await _unitOfWork.Customers.FirstOrDefaultAsync(c => c.Email == dto.Email);
             if (existingCustomer != null)
                 throw new InvalidOperationException($"Customer with email '{dto.Email}' already exists.");
         }
 
-        // Create address
         var address = new Address(
             dto.Address ?? "Not specified",
             dto.District ?? "Not specified",
@@ -110,14 +109,13 @@ public class CustomerService : ICustomerService
         if (customer == null) return null;
 
         // Validate email uniqueness if changed
-        if (!string.IsNullOrWhiteSpace(dto.Email) && dto.Email != customer.Email)
+        if (Customer.ValidateEmail(dto.Email) && dto.Email != customer.Email)
         {
             var existingCustomer = await _unitOfWork.Customers.FirstOrDefaultAsync(c => c.Email == dto.Email);
             if (existingCustomer != null)
                 throw new InvalidOperationException($"Customer with email '{dto.Email}' already exists.");
         }
 
-        // Update address if provided
         var address = customer.Address;
         if (!string.IsNullOrWhiteSpace(dto.Address) || !string.IsNullOrWhiteSpace(dto.District) || !string.IsNullOrWhiteSpace(dto.City))
         {
@@ -156,7 +154,8 @@ public class CustomerService : ICustomerService
         var customer = await _unitOfWork.Customers.FirstOrDefaultAsync(c => c.Id == id);
         if (customer == null) return false;
 
-        _unitOfWork.Customers.Remove(customer);
+        customer.SoftDelete();
+        _unitOfWork.Customers.Update(customer);
         await _unitOfWork.SaveChangesAsync();
 
         return true;
@@ -170,9 +169,9 @@ public class CustomerService : ICustomerService
             Name = customer.Name,
             Email = customer.Email,
             Phone = customer.Phone,
-            Address = customer.Address?.AddressLine,
-            District = customer.Address?.District,
-            City = customer.Address?.City,
+            Address = customer.Address?.AddressLine ?? string.Empty,
+            District = customer.Address?.District ?? string.Empty,
+            City = customer.Address?.City ?? string.Empty,
             DateOfBirth = customer.DateOfBirth,
             Gender = customer.Gender,
             CustomerType = customer.CustomerType,

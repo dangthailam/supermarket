@@ -20,6 +20,30 @@ public abstract class Entity
     {
         Id = id;
     }
+
+    /// <summary>
+    /// Indicates whether the entity has been soft deleted
+    /// </summary>
+    public bool IsDeleted => DeletedAt.HasValue;
+
+    /// <summary>
+    /// Soft deletes the entity by setting DeletedAt timestamp
+    /// </summary>
+    public virtual void SoftDelete(Guid? deletedBy = null)
+    {
+        DeletedAt = DateTime.UtcNow;
+        DeletedBy = deletedBy;
+    }
+
+    /// <summary>
+    /// Restores a soft-deleted entity
+    /// </summary>
+    public virtual void Restore()
+    {
+        DeletedAt = null;
+        DeletedBy = null;
+        UpdatedAt = DateTime.UtcNow;
+    }
     
     public override bool Equals(object? obj)
     {

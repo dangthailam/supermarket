@@ -31,4 +31,32 @@ public class Provider : Entity
         CompanyName = companyName;
         TaxNumber = taxNumber;
     }
+
+    /// <summary>
+    /// Updates provider information
+    /// </summary>
+    public void UpdateProvider(string name, string code, string? phone, string? email, Address? address, string? note, string? companyName, string? taxNumber)
+    {
+        Name = name;
+        Code = code;
+        Phone = phone;
+        Email = email;
+        Address = address;
+        Note = note;
+        CompanyName = companyName;
+        TaxNumber = taxNumber;
+    }
+
+    /// <summary>
+    /// Generates a unique provider code from the provider name
+    /// </summary>
+    public static string GenerateCode(string providerName)
+    {
+        // Generate code from provider name: take first 3 letters + timestamp
+        var prefix = new string(providerName.Where(char.IsLetterOrDigit).Take(3).ToArray()).ToUpper();
+        if (prefix.Length < 3) prefix = prefix.PadRight(3, 'X');
+        
+        var timestamp = DateTimeOffset.UtcNow.ToUnixTimeSeconds().ToString().Substring(5);
+        return $"{prefix}-{timestamp}";
+    }
 }

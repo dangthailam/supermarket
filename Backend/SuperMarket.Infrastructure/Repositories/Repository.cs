@@ -103,4 +103,20 @@ public class Repository<T> : IRepository<T> where T : class
 
         return new PaginatedResult<T>(items, count, pageNumber, pageSize);
     }
+
+    /// <summary>
+    /// Gets all entities including soft-deleted ones (ignores global query filter)
+    /// </summary>
+    public virtual async Task<IEnumerable<T>> GetAllIncludingDeletedAsync()
+    {
+        return await _dbSet.IgnoreQueryFilters().AsNoTracking().ToListAsync();
+    }
+
+    /// <summary>
+    /// Finds entities including soft-deleted ones (ignores global query filter)
+    /// </summary>
+    public virtual async Task<IEnumerable<T>> FindIncludingDeletedAsync(Expression<Func<T, bool>> predicate)
+    {
+        return await _dbSet.IgnoreQueryFilters().Where(predicate).AsNoTracking().ToListAsync();
+    }
 }

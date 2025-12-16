@@ -1,3 +1,5 @@
+using SuperMarket.Domain.Entities;
+
 namespace SuperMarket.Application.DTOs;
 
 public class PurchaseDto
@@ -32,7 +34,7 @@ public class CreatePurchaseDto
 {
     public DateTime PurchaseDate { get; set; }
     public Guid ProviderId { get; set; }
-    public int Status { get; set; }
+    public PurchaseStatus Status { get; set; }
     public string? Note { get; set; }
     public List<CreatePurchaseItemDto> Items { get; set; } = [];
 }
@@ -50,7 +52,7 @@ public class UpdatePurchaseDto
 {
     public DateTime? PurchaseDate { get; set; }
     public Guid? ProviderId { get; set; }
-    public int? Status { get; set; }
+    public PurchaseStatus? Status { get; set; }
     public string? Note { get; set; }
     public List<CreatePurchaseItemDto> Items { get; set; } = [];
 }

@@ -85,7 +85,7 @@ public class Purchase : Entity
     /// <summary>
     /// Updates purchase metadata and items.
     /// </summary>
-    public void UpdatePurchase(DateTime purchaseDate, Provider provider, string? note, ICollection<PurchaseItem> newItems)
+    public void UpdatePurchase(DateTime purchaseDate, Provider provider, string? note, ICollection<PurchaseItem> newItems, PurchaseStatus? status)
     {
         PurchaseDate = purchaseDate;
         ProviderId = provider.Id;
@@ -93,6 +93,11 @@ public class Purchase : Entity
         Note = note;
         PurchaseItems = newItems;
         UpdatedAt = DateTime.UtcNow;
+
+        if (status.HasValue)
+        {
+            TransitionToStatus(status.Value);
+        }
     }
 
     /// <summary>

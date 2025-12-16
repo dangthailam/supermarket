@@ -64,15 +64,9 @@ public class PurchaseService : IPurchaseService
             dto.PurchaseDate,
             code,
             provider,
-            PurchaseStatus.Pending,
+            dto.Status,
             dto.Note
         );
-
-        // If incoming status is Paid, transition to Paid (handles inventory updates)
-        if (dto.Status == (int)PurchaseStatus.Paid)
-        {
-            purchase.MarkAsPaid();
-        }
 
         await _unitOfWork.PurchaseItems.AddRangeAsync(purchaseItems);
         await _unitOfWork.Purchases.AddAsync(purchase);
@@ -153,14 +147,7 @@ public class PurchaseService : IPurchaseService
 
             _unitOfWork.PurchaseItems.RemoveRange(purchase.PurchaseItems);
 
-            purchase.UpdatePurchase(purchaseDate, provider, note, items);
-        }
-
-        // Handle status transition
-        if (dto.Status.HasValue)
-        {
-            var newStatus = (PurchaseStatus)dto.Status.Value;
-            purchase.TransitionToStatus(newStatus);
+            purchase.UpdatePurchase(purchaseDate, provider, note, items, dto.Status);
         }
 
         _unitOfWork.Purchases.Update(purchase);
@@ -191,8 +178,10 @@ public class PurchaseService : IPurchaseService
         {
             _unitOfWork.Products.Update(product);
         }
-        _unitOfWork.PurchaseItems.RemoveRange(purchase.PurchaseItems);
-        _unitOfWork.Purchases.Remove(purchase);
+        
+        // Soft delete the purchase
+        purchase.SoftDelete();
+        _unitOfWork.Purchases.Update(purchase);
         await _unitOfWork.SaveChangesAsync();
 
         return true;

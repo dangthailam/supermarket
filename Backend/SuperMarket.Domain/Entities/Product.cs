@@ -128,5 +128,12 @@ public class Product : Entity
         UpdatedAt = DateTime.UtcNow;
     }
 
-    
+    /// <summary>
+    /// Deactivates the product (soft delete)
+    /// </summary>
+    public void Deactivate()
+    {
+        IsActive = false;
+        UpdatedAt = DateTime.UtcNow;
+    }
 }

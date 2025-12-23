@@ -6,6 +6,70 @@
   background: #f5f5f5;
 }
 
+// Top Bar with User Info
+.top-bar {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: white;
+  border-bottom: 1px solid #e0e0e0;
+  padding: 12px 16px;
+  z-index: 1000;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+
+  .app-title {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 18px;
+    font-weight: 600;
+    color: #333;
+
+    i {
+      font-size: 24px;
+      color: #4b7cf3;
+    }
+  }
+
+  .user-info {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+
+    .user-email {
+      font-size: 13px;
+      color: #666;
+      max-width: 150px;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .logout-btn {
+      background: none;
+      border: none;
+      padding: 6px;
+      cursor: pointer;
+      color: #666;
+      border-radius: 6px;
+      transition: all 0.2s;
+
+      &:hover {
+        background: #f5f5f5;
+        color: #d32f2f;
+      }
+
+      i {
+        font-size: 18px;
+      }
+    }
+  }
+}
+
 // Main Content Area
 .main-content {
   flex: 1;
@@ -16,6 +80,11 @@
   // Add padding at bottom to prevent content being hidden behind bottom nav
   &.pb-7 {
     padding-bottom: 70px;
+  }
+
+  // Add padding at top for fixed top bar
+  &.pt-6 {
+    padding-top: 60px;
   }
 }
 

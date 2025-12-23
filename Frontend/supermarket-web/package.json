@@ -19,6 +19,7 @@
     "@angular/platform-browser": "^20.3.14",
     "@angular/platform-browser-dynamic": "^20.3.14",
     "@angular/router": "^20.3.14",
+    "@supabase/supabase-js": "^2.88.0",
     "primeflex": "^4.0.0",
     "primeicons": "^7.0.0",
     "primeng": "^20.3.0",

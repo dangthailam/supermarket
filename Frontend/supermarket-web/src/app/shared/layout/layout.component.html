@@ -1,6 +1,22 @@
 <div class="mobile-layout">
+  <!-- Top Bar with User Info -->
+  <div class="top-bar">
+    <div class="app-title">
+      <i class="pi pi-shopping-bag"></i>
+      <span>SuperMarket</span>
+    </div>
+    @if (currentUser) {
+      <div class="user-info">
+        <span class="user-email">{{ currentUser.email }}</span>
+        <button class="logout-btn" (click)="logout()" title="Đăng xuất">
+          <i class="pi pi-sign-out"></i>
+        </button>
+      </div>
+    }
+  </div>
+
   <!-- Main Content -->
-  <main class="main-content pb-7">
+  <main class="main-content pb-7 pt-6">
     <router-outlet></router-outlet>
   </main>
 

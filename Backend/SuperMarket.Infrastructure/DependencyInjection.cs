@@ -31,6 +31,9 @@ public static class DependencyInjection
         services.AddScoped<IExcelImportService, ExcelImportService>();
         services.AddScoped<ITransactionService, TransactionService>();
         services.AddScoped<ISkuGeneratorService, SkuGeneratorService>();
+        
+        // Add Current User Service for audit trail
+        services.AddScoped<ICurrentUserService, CurrentUserService>();
 
         // Configure Supabase
         services.AddSingleton(sp =>

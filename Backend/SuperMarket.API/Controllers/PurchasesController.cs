@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using SuperMarket.Application.DTOs;
 using SuperMarket.Application.Inventory;
@@ -8,6 +9,7 @@ namespace SuperMarket.API.Controllers;
 
 [ApiController]
 [Route("api/[controller]")]
+[Authorize]
 public class PurchasesController : ControllerBase
 {
     private readonly IPurchaseService _purchaseService;

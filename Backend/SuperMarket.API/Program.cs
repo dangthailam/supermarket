@@ -39,7 +39,64 @@ public class Program
 
             builder.Services.AddInfrastructure(builder.Configuration);
 
-            // Add repositories and services
+            // Add HttpContextAccessor for user context
+            builder.Services.AddHttpContextAccessor();
+
+            // Add JWT Authentication
+            builder.Services.AddAuthentication("Bearer")
+                .AddJwtBearer("Bearer", options =>
+                {
+                    var supabaseUrl = builder.Configuration["Supabase:Url"];
+
+                    if (string.IsNullOrEmpty(supabaseUrl))
+                    {
+                        throw new InvalidOperationException("Supabase URL is required for authentication");
+                    }
+
+                    // Supabase uses ES256 (asymmetric) signing with JWKS endpoint
+                    // Configure to use Supabase's JSON Web Key Set (JWKS) endpoint
+                    options.RequireHttpsMetadata = false; // Allow HTTP in development
+                    options.MetadataAddress = $"{supabaseUrl}/auth/v1/.well-known/jwks.json";
+                    
+                    options.TokenValidationParameters = new Microsoft.IdentityModel.Tokens.TokenValidationParameters
+                    {
+                        ValidateIssuerSigningKey = true,
+                        ValidateIssuer = true,
+                        ValidIssuer = $"{supabaseUrl}/auth/v1",
+                        ValidateAudience = true,
+                        ValidAudience = "authenticated",
+                        ValidateLifetime = true,
+                        ClockSkew = TimeSpan.FromMinutes(5)
+                    };
+
+                    // Configure the configuration manager to fetch JWKS
+                    options.ConfigurationManager = new Microsoft.IdentityModel.Protocols.ConfigurationManager<Microsoft.IdentityModel.Protocols.OpenIdConnect.OpenIdConnectConfiguration>(
+                        $"{supabaseUrl}/auth/v1/.well-known/jwks.json",
+                        new JwksRetriever(),
+                        new Microsoft.IdentityModel.Protocols.HttpDocumentRetriever());
+                    
+                    options.Events = new Microsoft.AspNetCore.Authentication.JwtBearer.JwtBearerEvents
+                    {
+                        OnAuthenticationFailed = context =>
+                        {
+                            Log.Warning("Authentication failed: {Error}", context.Exception.Message);
+                            if (context.Exception.InnerException != null)
+                            {
+                                Log.Warning("Inner exception: {InnerError}", context.Exception.InnerException.Message);
+                            }
+                            return Task.CompletedTask;
+                        },
+                        OnTokenValidated = context =>
+                        {
+                            var userId = context.Principal?.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value
+                                ?? context.Principal?.FindFirst("sub")?.Value;
+                            Log.Debug("Token validated for user: {UserId}", userId);
+                            return Task.CompletedTask;
+                        }
+                    };
+                });
+
+            builder.Services.AddAuthorization();
 
             // Add controllers
             builder.Services.AddControllers();
@@ -93,6 +150,8 @@ public class Program
 
             app.UseCors("AllowAngularApp");
 
+            // Authentication & Authorization middleware
+            app.UseAuthentication();
             app.UseAuthorization();
 
             app.MapControllers();
@@ -107,5 +166,26 @@ public class Program
         {
             Log.CloseAndFlush();
         }
+    }
+}
+
+// Custom JWKS retriever for Supabase
+public class JwksRetriever : Microsoft.IdentityModel.Protocols.IConfigurationRetriever<Microsoft.IdentityModel.Protocols.OpenIdConnect.OpenIdConnectConfiguration>
+{
+    public async Task<Microsoft.IdentityModel.Protocols.OpenIdConnect.OpenIdConnectConfiguration> GetConfigurationAsync(
+        string address, 
+        Microsoft.IdentityModel.Protocols.IDocumentRetriever retriever, 
+        CancellationToken cancel)
+    {
+        var jwksJson = await retriever.GetDocumentAsync(address, cancel);
+        var jwks = new Microsoft.IdentityModel.Tokens.JsonWebKeySet(jwksJson);
+        
+        var config = new Microsoft.IdentityModel.Protocols.OpenIdConnect.OpenIdConnectConfiguration();
+        foreach (var key in jwks.Keys)
+        {
+            config.SigningKeys.Add(key);
+        }
+        
+        return config;
     }
 }

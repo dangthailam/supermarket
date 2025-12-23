@@ -1,13 +1,25 @@
 using Microsoft.EntityFrameworkCore;
+using SuperMarket.Application.Interfaces;
+using SuperMarket.Domain.Common;
 using SuperMarket.Domain.Entities;
 
 namespace SuperMarket.Infrastructure.Data;
 
 public class SuperMarketDbContext : DbContext
 {
+    private readonly ICurrentUserService? _currentUserService;
+
     public SuperMarketDbContext(DbContextOptions<SuperMarketDbContext> options)
         : base(options)
     {
+    }
+
+    public SuperMarketDbContext(
+        DbContextOptions<SuperMarketDbContext> options,
+        ICurrentUserService currentUserService)
+        : base(options)
+    {
+        _currentUserService = currentUserService;
     }
 
     public DbSet<Brand> Brands { get; set; }
@@ -34,6 +46,52 @@ public class SuperMarketDbContext : DbContext
     public DbSet<TEntity> SetIncludingDeleted<TEntity>() where TEntity : class
     {
         return Set<TEntity>();
+    }
+
+    /// <summary>
+    /// Automatically populates audit fields (CreatedBy, UpdatedBy, DeletedBy) based on current user context
+    /// </summary>
+    public override async Task<int> SaveChangesAsync(CancellationToken cancellationToken = default)
+    {
+        var currentUserId = _currentUserService?.UserId ?? Guid.Empty;
+        var now = DateTime.UtcNow;
+
+        foreach (var entry in ChangeTracker.Entries<Entity>())
+        {
+            switch (entry.State)
+            {
+                case EntityState.Added:
+                    entry.Property(nameof(Entity.CreatedAt)).CurrentValue = now;
+                    entry.Property(nameof(Entity.CreatedBy)).CurrentValue = currentUserId;
+                    break;
+
+                case EntityState.Modified:
+                    // Check if this is a soft delete operation
+                    if (entry.Property(nameof(Entity.DeletedAt)).CurrentValue != null &&
+                        entry.Property(nameof(Entity.DeletedAt)).OriginalValue == null)
+                    {
+                        // This is a soft delete
+                        entry.Property(nameof(Entity.DeletedBy)).CurrentValue = currentUserId;
+                    }
+                    else
+                    {
+                        // Regular update
+                        entry.Property(nameof(Entity.UpdatedAt)).CurrentValue = now;
+                        entry.Property(nameof(Entity.UpdatedBy)).CurrentValue = currentUserId;
+                    }
+                    break;
+            }
+        }
+
+        return await base.SaveChangesAsync(cancellationToken);
+    }
+
+    /// <summary>
+    /// Synchronous version of SaveChangesAsync with audit field population
+    /// </summary>
+    public override int SaveChanges()
+    {
+        return SaveChangesAsync().GetAwaiter().GetResult();
     }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)

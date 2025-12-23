@@ -11,6 +11,7 @@ public class Purchase : Entity
     public string Code { get; private set; }
 
     public Guid ProviderId { get; private set; }
+    
     public Provider Provider { get; private set; }
 
     public PurchaseStatus Status { get; private set; }

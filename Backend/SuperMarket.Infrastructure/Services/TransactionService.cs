@@ -23,48 +23,30 @@ public class TransactionService : ITransactionService
 
         try
         {
-            // Generate transaction number
-            var transactionNumber = $"TXN-{DateTime.UtcNow:yyyyMMddHHmmss}";
-
-            var transaction = new Transaction
-            {
-                TransactionNumber = transactionNumber,
-                PaymentMethod = dto.PaymentMethod,
-                CustomerName = dto.CustomerName,
-                CustomerPhone = dto.CustomerPhone,
-                DiscountAmount = dto.DiscountAmount,
-                Status = TransactionStatus.Completed
-            };
-
-            decimal totalAmount = 0;
-            var transactionItems = new List<TransactionItem>();
+            // Create transaction using domain logic
+            var transaction = Transaction.Create(
+                dto.PaymentMethod,
+                dto.DiscountAmount,
+                dto.CustomerName,
+                dto.CustomerPhone
+            );
 
             // Process each item
             foreach (var itemDto in dto.Items)
             {
+                // Fetch product
                 var product = await _unitOfWork.Products.FirstOrDefaultAsync(p => p.Id == itemDto.ProductId);
                 if (product == null)
                     throw new Exception($"Product with ID {itemDto.ProductId} not found");
 
+                // Check stock availability
                 if (product.StockQuantity < itemDto.Quantity)
                     throw new Exception($"Insufficient stock for {product.Name}");
 
-                var itemTotal = (product.Price * itemDto.Quantity) - itemDto.Discount;
-                totalAmount += itemTotal;
+                // Add item to transaction (domain handles business logic)
+                transaction.AddItem(product, itemDto.Quantity, itemDto.Discount);
 
-                var transactionItem = new TransactionItem
-                {
-                    ProductId = product.Id,
-                    ProductName = product.Name,
-                    Quantity = itemDto.Quantity,
-                    UnitPrice = product.Price,
-                    Discount = itemDto.Discount,
-                    TotalPrice = itemTotal
-                };
-
-                transactionItems.Add(transactionItem);
-
-                // Update stock
+                // Update product stock
                 product.UpdateStock(-itemDto.Quantity);
                 _unitOfWork.Products.Update(product);
 
@@ -73,27 +55,25 @@ public class TransactionService : ITransactionService
                     product.Id,
                     MovementType.Sale,
                     -itemDto.Quantity,
-                    transactionNumber,
+                    transaction.TransactionNumber,
                     "Sale transaction"
                 );
                 await _unitOfWork.InventoryMovements.AddAsync(inventoryMovement);
             }
 
-            // Calculate tax (10% for example)
-            var taxAmount = totalAmount * 0.10m;
-            transaction.TotalAmount = totalAmount;
-            transaction.TaxAmount = taxAmount;
-            transaction.NetAmount = totalAmount + taxAmount - dto.DiscountAmount;
+            // Calculate totals using domain logic
+            transaction.CalculateTotals();
 
+            // Save transaction
             await _unitOfWork.Transactions.AddAsync(transaction);
             await _unitOfWork.SaveChangesAsync();
 
-            // Add transaction items
-            foreach (var item in transactionItems)
+            // Set transaction ID for items and save
+            foreach (var item in transaction.TransactionItems)
             {
-                item.TransactionId = transaction.Id;
+                item.SetTransactionId(transaction.Id);
             }
-            await _unitOfWork.TransactionItems.AddRangeAsync(transactionItems);
+            await _unitOfWork.TransactionItems.AddRangeAsync(transaction.TransactionItems);
 
             await _unitOfWork.CommitTransactionAsync();
 
@@ -158,27 +138,34 @@ public class TransactionService : ITransactionService
             .Include(t => t.TransactionItems)
             .FirstOrDefaultAsync(t => t.Id == id);
 
-        if (transaction == null || transaction.Status == TransactionStatus.Cancelled)
+        if (transaction == null)
+            return false;
+
+        // Check if transaction can be cancelled (domain logic)
+        if (!transaction.CanBeCancelled())
             return false;
 
         await _unitOfWork.BeginTransactionAsync();
 
         try
         {
+            // Get items that need stock restoration (domain logic)
+            var itemsToRestore = transaction.GetItemsForStockRestoration();
+
             // Restore stock for each item
-            foreach (var item in transaction.TransactionItems)
+            foreach (var (productId, quantity) in itemsToRestore)
             {
-                var product = await _unitOfWork.Products.FirstOrDefaultAsync(p => p.Id == item.ProductId);
+                var product = await _unitOfWork.Products.FirstOrDefaultAsync(p => p.Id == productId);
                 if (product != null)
                 {
-                    product.UpdateStock(item.Quantity);
+                    product.UpdateStock(quantity);
                     _unitOfWork.Products.Update(product);
 
                     // Create inventory movement
                     var inventoryMovement = new InventoryMovement(
                         product.Id,
                         MovementType.Return,
-                        item.Quantity,
+                        quantity,
                         transaction.TransactionNumber,
                         "Transaction cancelled"
                     );
@@ -186,7 +173,8 @@ public class TransactionService : ITransactionService
                 }
             }
 
-            transaction.Status = TransactionStatus.Cancelled;
+            // Cancel transaction (domain logic)
+            transaction.Cancel();
             _unitOfWork.Transactions.Update(transaction);
 
             await _unitOfWork.CommitTransactionAsync();

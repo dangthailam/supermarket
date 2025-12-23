@@ -49,6 +49,7 @@ import { DividerModule } from 'primeng/divider';
               formControlName="email"
               placeholder="email@example.com"
               class="w-full"
+              (keydown.enter)="onSubmit()"
             />
             @if (loginForm.get('email')?.invalid && loginForm.get('email')?.touched) {
               <small class="text-red-500">Email không hợp lệ</small>
@@ -64,6 +65,7 @@ import { DividerModule } from 'primeng/divider';
               placeholder="Nhập mật khẩu"
               styleClass="w-full"
               inputStyleClass="w-full"
+              (keydown.enter)="onSubmit()"
             ></p-password>
             @if (loginForm.get('password')?.invalid && loginForm.get('password')?.touched) {
               <small class="text-red-500">Mật khẩu là bắt buộc</small>

@@ -2,7 +2,11 @@
 FROM node:lts-alpine AS build
 
 ARG API_URL
+ARG SUPABASE_URL
+ARG SUPABASE_ANON_KEY
 ENV API_URL=${API_URL}
+ENV SUPABASE_URL=${SUPABASE_URL}
+ENV SUPABASE_ANON_KEY=${SUPABASE_ANON_KEY}
 
 WORKDIR /app
 
@@ -15,9 +19,15 @@ RUN npm ci
 # Copy source code
 COPY . ./
 
-# Replace API_URL placeholder before build
+# Replace placeholders before build
 RUN if [ -n "$API_URL" ]; then \
       find src/environments -name "*.ts" -exec sed -i "s|\${API_URL}|${API_URL}|g" {} + ; \
+    fi && \
+    if [ -n "$SUPABASE_URL" ]; then \
+      find src/environments -name "*.ts" -exec sed -i "s|\${SUPABASE_URL}|${SUPABASE_URL}|g" {} + ; \
+    fi && \
+    if [ -n "$SUPABASE_ANON_KEY" ]; then \
+      find src/environments -name "*.ts" -exec sed -i "s|\${SUPABASE_ANON_KEY}|${SUPABASE_ANON_KEY}|g" {} + ; \
     fi
 
 # Build the app

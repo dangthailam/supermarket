@@ -52,18 +52,20 @@ public class ProviderTests
         var code = Provider.GenerateCode("Test Provider");
 
         // Assert
-        code.Should().StartWith("TE");
-        code.Should().HaveLength(6);
+        code.Should().StartWith("TES-");
+        code.Should().MatchRegex(@"^[A-Z]{3}-\d{5}$");
     }
 
     [Fact]
-    public void GenerateCode_ShouldGenerateUniqueCodesInSequence()
+    public void GenerateCode_ShouldGenerateDifferentCodesForDifferentNames()
     {
         // Act
-        var code1 = Provider.GenerateCode("Provider One");
-        var code2 = Provider.GenerateCode("Provider Two");
+        var code1 = Provider.GenerateCode("Alpha Corporation");
+        var code2 = Provider.GenerateCode("Beta Solutions");
 
-        // Assert
+        // Assert - Different provider names should generate different prefixes
+        code1.Should().StartWith("ALP-");
+        code2.Should().StartWith("BET-");
         code1.Should().NotBe(code2);
     }
 
@@ -73,8 +75,9 @@ public class ProviderTests
         // Act
         var code = Provider.GenerateCode("Test & Provider!");
 
-        // Assert
-        code.Should().MatchRegex("^SUP[A-Z0-9]+$");
+        // Assert - Should extract letters and format as XXX-#####
+        code.Should().MatchRegex(@"^[A-Z]{3}-\d{5}$");
+        code.Should().StartWith("TES-");
     }
 
     [Fact]

@@ -27,20 +27,11 @@ jobs:
       run: dotnet build SuperMarket.sln --configuration Release --no-restore
       
     - name: Run tests
-      run: dotnet test SuperMarket.sln --configuration Release --no-build --verbosity normal --logger "trx" --results-directory ./TestResults
+      run: dotnet test SuperMarket.sln --configuration Release --verbosity normal --logger trx --results-directory TestResults
       
     - name: Upload test results
       uses: actions/upload-artifact@v4
       if: always()
       with:
         name: test-results
-        path: TestResults/**/*.trx
-        
-    - name: Test Report
-      uses: dorny/test-reporter@v1
-      if: always()
-      with:
-        name: Test Results
-        path: 'TestResults/**/*.trx'
-        reporter: dotnet-trx
-        fail-on-error: true
+        path: TestResults/*.trx

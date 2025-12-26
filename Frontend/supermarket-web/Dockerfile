@@ -4,9 +4,11 @@ FROM node:lts-alpine AS build
 ARG API_URL
 ARG SUPABASE_URL
 ARG SUPABASE_ANON_KEY
+ARG SENTRY_DSN
 ENV API_URL=${API_URL}
 ENV SUPABASE_URL=${SUPABASE_URL}
 ENV SUPABASE_ANON_KEY=${SUPABASE_ANON_KEY}
+ENV SENTRY_DSN=${SENTRY_DSN}
 
 WORKDIR /app
 
@@ -28,6 +30,9 @@ RUN if [ -n "$API_URL" ]; then \
     fi && \
     if [ -n "$SUPABASE_ANON_KEY" ]; then \
       find src/environments -name "*.ts" -exec sed -i "s|\${SUPABASE_ANON_KEY}|${SUPABASE_ANON_KEY}|g" {} + ; \
+    fi && \
+    if [ -n "$SENTRY_DSN" ]; then \
+      find src/environments -name "*.ts" -exec sed -i "s|\${SENTRY_DSN}|${SENTRY_DSN}|g" {} + ; \
     fi
 
 # Build the app

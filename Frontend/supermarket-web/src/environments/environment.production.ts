@@ -4,5 +4,6 @@ export const environment = {
   supabase: {
     url: '${SUPABASE_URL}', // Set via Railway environment variable
     anonKey: '${SUPABASE_ANON_KEY}' // Set via Railway environment variable
-  }
+  },
+  sentryDsn: '${SENTRY_DSN}' // Set via Railway environment variable
 };

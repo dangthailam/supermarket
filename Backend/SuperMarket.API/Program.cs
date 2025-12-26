@@ -32,6 +32,19 @@ public class Program
 
             var builder = WebApplication.CreateBuilder(args);
             
+            // Configure Sentry
+            builder.WebHost.UseSentry(o =>
+            {
+                o.Dsn = builder.Configuration["Sentry:Dsn"];
+                o.Environment = builder.Environment.EnvironmentName;
+                o.TracesSampleRate = 1.0;
+                o.SendDefaultPii = true;
+                o.MaxBreadcrumbs = 50;
+                o.Debug = false;
+                o.DiagnosticLevel = SentryLevel.Error;
+                o.AttachStacktrace = true;
+            });
+            
             // Add Serilog to the service collection
             builder.Host.UseSerilog();
 
